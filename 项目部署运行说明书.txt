@@ -1,0 +1,132 @@
+============================================================
+  高校课程作业提交与批改管理系统 - 项目部署运行说明书
+============================================================
+
+一、项目概述
+-----------
+本项目是一个基于前后端分离架构的Web应用系统，用于高校课程作业的发布、
+提交与批改管理。系统支持三种角色：管理员、教师和学生。
+
+二、技术栈
+-----------
+前端：Vue 3 + Pinia + Axios + Element Plus + Vite
+后端：Spring Boot 3.2 + MyBatis + Spring Security + JWT
+数据库：MySQL 8.0
+JDK：17
+
+三、环境要求
+-----------
+1. JDK 17 或更高版本
+2. Maven 3.8+
+3. Node.js 18+ 和 npm
+4. MySQL 8.0
+
+四、数据库配置
+-----------
+1. 安装并启动 MySQL 8.0 服务
+2. 使用 root 账号登录 MySQL：
+   mysql -u root -p
+3. 执行数据库脚本：
+   source database.sql
+   （或在 Navicat/MySQL Workbench 等工具中导入 database.sql）
+4. 脚本会自动创建 course_assignment_system 数据库及所有表结构，
+   并插入初始测试数据。
+
+五、后端部署运行
+-----------
+1. 进入 springboot_back 目录：
+   cd springboot_back
+
+2. 修改 src/main/resources/application.yml 中的数据库配置：
+   spring.datasource.username=你的MySQL用户名
+   spring.datasource.password=你的MySQL密码
+
+3. 编译打包：
+   mvn clean package -DskipTests
+
+4. 运行项目：
+   mvn spring-boot:run
+   或者：
+   java -jar target/course-assignment-system-1.0.0.jar
+
+5. 后端启动后访问地址：http://localhost:8080
+
+六、前端部署运行
+-----------
+1. 进入 vue_front 目录：
+   cd vue_front
+
+2. 安装依赖：
+   npm install
+
+3. 启动开发服务器：
+   npm run dev
+
+4. 前端启动后访问地址：http://localhost:5173
+
+5. 生产环境构建：
+   npm run build
+   构建产物在 dist/ 目录中，可部署到 Nginx 等 Web 服务器。
+
+七、测试账号
+-----------
+用户名      密码      角色
+admin       123456    管理员
+teacher1    123456    教师
+teacher2    123456    教师
+student1    123456    学生
+student2    123456    学生
+student3    123456    学生
+
+八、项目结构说明
+-----------
+├── springboot_back/          # Spring Boot 后端项目
+│   ├── src/main/java/com/courseassignment/
+│   │   ├── common/           # 通用类（响应结果封装）
+│   │   ├── config/           # 配置类（安全、JWT、拦截器）
+│   │   ├── controller/       # 控制器层
+│   │   ├── dto/              # 数据传输对象
+│   │   ├── entity/           # 实体类
+│   │   ├── mapper/           # MyBatis Mapper接口
+│   │   └── service/          # 服务层接口与实现
+│   ├── src/main/resources/
+│   │   ├── application.yml   # 应用配置文件
+│   │   └── mapper/           # MyBatis XML映射文件（可选）
+│   └── pom.xml               # Maven配置
+├── vue_front/                # Vue 3 前端项目
+│   ├── src/
+│   │   ├── api/              # API 请求模块
+│   │   ├── components/       # 公共组件
+│   │   ├── router/           # 路由配置
+│   │   ├── stores/           # Pinia 状态管理
+│   │   ├── utils/            # 工具函数（Axios封装）
+│   │   └── views/            # 页面组件
+│   ├── package.json          # npm配置
+│   └── vite.config.js        # Vite配置
+├── database.sql              # 数据库建库脚本
+└── 项目部署运行说明书.txt     # 本文件
+
+九、注意事项
+-----------
+1. 首次运行前必须导入 database.sql 创建数据库
+2. 确保 MySQL 服务已启动且端口为 3306
+3. 后端默认端口 8080，前端默认端口 5173，前端通过 Vite 代理访问后端
+4. 文件上传存储在 springboot_back/uploads/ 目录下
+5. 项目使用 JWT 进行身份认证，Token 有效期 24 小时
+6. 密码使用 BCrypt 加密存储
+
+十、常见问题
+-----------
+Q: 后端启动报数据库连接错误？
+A: 检查 MySQL 是否启动，以及 application.yml 中的数据库连接配置。
+
+Q: 前端报跨域错误？
+A: 后端已配置 CORS，确保通过前端开发服务器（5173端口）访问，
+   开发模式下 Vite 已配置代理。
+
+Q: 文件上传失败？
+A: 检查 uploads 目录是否存在且有写入权限，或检查文件大小限制。
+
+============================================================
+  文档编写日期：2026-06-20
+============================================================
