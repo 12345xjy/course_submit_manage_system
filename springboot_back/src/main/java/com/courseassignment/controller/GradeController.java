@@ -92,6 +92,6 @@ public class GradeController {
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public Result<Void> deleteGrade(@PathVariable Long id) {
         gradeService.deleteById(id);
-        return Result.success("成绩删除成功");
+        return Result.success();
     }
 }

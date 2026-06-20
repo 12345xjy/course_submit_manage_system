@@ -56,7 +56,7 @@ public class UserController {
         }
         try {
             userService.changePassword(userId, oldPassword, newPassword);
-            return Result.success("密码修改成功");
+            return Result.success();
         } catch (RuntimeException e) {
             return Result.error(e.getMessage());
         }
@@ -94,7 +94,7 @@ public class UserController {
         user.setId(id);
         user.setStatus(params.get("status"));
         userService.update(user);
-        return Result.success("用户状态更新成功");
+        return Result.success();
     }
 
     /**
@@ -104,6 +104,6 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> deleteUser(@PathVariable Long id) {
         userService.deleteById(id);
-        return Result.success("用户删除成功");
+        return Result.success();
     }
 }

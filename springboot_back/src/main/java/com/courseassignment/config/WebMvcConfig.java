@@ -1,7 +1,7 @@
 package com.courseassignment.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -13,11 +13,15 @@ import java.io.File;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    @Value("${file.upload.path:./uploads}")
-    private String uploadPath;
+    private final FileUploadProperties fileUploadProperties;
+
+    public WebMvcConfig(FileUploadProperties fileUploadProperties) {
+        this.fileUploadProperties = fileUploadProperties;
+    }
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+        String uploadPath = fileUploadProperties.getPath();
         File uploadDir = new File(uploadPath);
         if (!uploadDir.exists()) {
             uploadDir.mkdirs();

@@ -70,7 +70,7 @@ public class AssignmentController {
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public Result<Void> deleteAssignment(@PathVariable Long id) {
         assignmentService.deleteById(id);
-        return Result.success("作业删除成功");
+        return Result.success();
     }
 
     /**

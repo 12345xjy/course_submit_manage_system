@@ -81,7 +81,7 @@ public class SubmissionController {
         String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
 
         return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentType(MediaType.parseMediaType("application/octet-stream"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                 .body(resource);
     }
@@ -92,6 +92,6 @@ public class SubmissionController {
     @DeleteMapping("/submissions/{id}")
     public Result<Void> deleteSubmission(@PathVariable Long id) {
         submissionService.deleteById(id);
-        return Result.success("提交记录删除成功");
+        return Result.success();
     }
 }

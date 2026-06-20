@@ -31,4 +31,4 @@ file:
 
 logging:
   level:
-    com.courseassignment: debug
+    "[com.courseassignment]": debug

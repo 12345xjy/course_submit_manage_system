@@ -1,7 +1,7 @@
 package com.courseassignment.service.impl;
 
+import com.courseassignment.config.FileUploadProperties;
 import com.courseassignment.service.FileService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -9,11 +9,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -22,8 +23,11 @@ import java.util.UUID;
 @Service
 public class FileServiceImpl implements FileService {
 
-    @Value("${file.upload.path:./uploads}")
-    private String uploadPath;
+    private final FileUploadProperties fileUploadProperties;
+
+    public FileServiceImpl(FileUploadProperties fileUploadProperties) {
+        this.fileUploadProperties = fileUploadProperties;
+    }
 
     @Override
     public String upload(MultipartFile file) {
@@ -32,6 +36,7 @@ public class FileServiceImpl implements FileService {
         }
 
         try {
+            String uploadPath = fileUploadProperties.getPath();
             // 确保上传目录存在
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) {
@@ -66,15 +71,17 @@ public class FileServiceImpl implements FileService {
     @Override
     public Resource download(String filePath) {
         try {
+            String uploadPath = fileUploadProperties.getPath();
             Path file = Paths.get(uploadPath).resolve(filePath).normalize();
-            Resource resource = new UrlResource(file.toUri());
+            URI uri = Objects.requireNonNull(file.toUri());
+            Resource resource = UrlResource.from(uri);
 
             if (resource.exists() && resource.isReadable()) {
                 return resource;
             } else {
                 throw new RuntimeException("文件不存在或无法读取");
             }
-        } catch (MalformedURLException e) {
+        } catch (Exception e) {
             throw new RuntimeException("文件下载失败: " + e.getMessage());
         }
     }

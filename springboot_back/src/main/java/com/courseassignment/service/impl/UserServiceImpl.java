@@ -105,14 +105,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User update(User user) {
-        User existing = findById(user.getId());
+        findById(user.getId());
         userMapper.update(user);
         return findById(user.getId());
     }
 
     @Override
     public void deleteById(Long id) {
-        User existing = findById(id);
+        findById(id);
         userMapper.deleteById(id);
     }
 

@@ -73,7 +73,7 @@ public class CourseController {
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public Result<Void> deleteCourse(@PathVariable Long id) {
         courseService.deleteById(id);
-        return Result.success("课程删除成功");
+        return Result.success();
     }
 
     /**
@@ -103,7 +103,7 @@ public class CourseController {
                                       @RequestAttribute("userId") Long userId) {
         try {
             courseService.enrollStudent(courseId, userId);
-            return Result.success("选课成功");
+            return Result.success();
         } catch (RuntimeException e) {
             return Result.error(e.getMessage());
         }
@@ -116,7 +116,7 @@ public class CourseController {
     public Result<Void> unenrollCourse(@PathVariable Long courseId,
                                         @RequestAttribute("userId") Long userId) {
         courseService.unenrollStudent(courseId, userId);
-        return Result.success("退课成功");
+        return Result.success();
     }
 
     /**

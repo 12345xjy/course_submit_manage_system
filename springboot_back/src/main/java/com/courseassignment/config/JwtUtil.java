@@ -2,7 +2,6 @@ package com.courseassignment.config;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -18,11 +17,10 @@ public class JwtUtil {
     private final SecretKey secretKey;
     private final Long expiration;
 
-    public JwtUtil(@Value("${jwt.secret}") String secret,
-                   @Value("${jwt.expiration}") Long expiration) {
-        byte[] keyBytes = Base64.getDecoder().decode(secret);
+    public JwtUtil(JwtProperties jwtProperties) {
+        byte[] keyBytes = Base64.getDecoder().decode(jwtProperties.getSecret());
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
-        this.expiration = expiration;
+        this.expiration = jwtProperties.getExpiration();
     }
 
     /**
