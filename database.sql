@@ -2,7 +2,20 @@
 -- 高校课程作业提交与批改管理系统 - 数据库脚本
 -- 数据库: MySQL 8.0
 -- 字符集: utf8mb4
+-- 导入方式（任选其一）：
+--   方式1 - MySQL命令行：
+--     mysql -u root -p --default-character-set=utf8mb4 < database.sql
+--   方式2 - MySQL Workbench：
+--     File → Run SQL Script → 选择本文件，编码选 UTF-8
+--   方式3 - Navicat：
+--     右键数据库 → 运行SQL文件 → 编码选 UTF-8
 -- ============================================================
+
+-- 设置客户端字符集为 UTF-8（解决 GBK 解码报错）
+SET NAMES utf8mb4;
+SET character_set_client = utf8mb4;
+SET character_set_connection = utf8mb4;
+SET character_set_results = utf8mb4;
 
 -- 创建数据库
 CREATE DATABASE IF NOT EXISTS course_assignment_system
