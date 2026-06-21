@@ -25,6 +25,12 @@
           </el-tag>
         </template>
       </el-table-column>
+      <el-table-column v-if="userStore.isStudent" label="选课状态" width="100">
+        <template #default="{ row }">
+          <el-tag v-if="isEnrolled(row)" type="success" size="small">已选</el-tag>
+          <el-tag v-else type="info" size="small">未选</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="240">
         <template #default="{ row }">
           <el-button size="small" @click="$router.push(`/courses/${row.id}`)">详情</el-button>
@@ -73,6 +79,7 @@ import { Plus, Search } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
 const courses = ref([])
+const enrolledIds = ref(new Set())
 const loading = ref(false)
 const keyword = ref('')
 const showCreateDialog = ref(false)
@@ -89,11 +96,16 @@ async function fetchCourses() {
     if (userStore.isTeacher) {
       const res = await courseApi.getMyTeachingCourses()
       courses.value = res.data
-    } else if (userStore.isAdmin) {
-      const res = await courseApi.getAllCourses(params)
-      courses.value = res.data
+    } else if (userStore.isStudent) {
+      // 学生看到全部课程以便选课
+      const [allRes, myRes] = await Promise.all([
+        courseApi.getAllCourses(params),
+        courseApi.getMyCourses()
+      ])
+      courses.value = allRes.data
+      enrolledIds.value = new Set(myRes.data.map(c => c.id))
     } else {
-      const res = await courseApi.getMyCourses()
+      const res = await courseApi.getAllCourses(params)
       courses.value = res.data
     }
   } catch (e) { /* ignore */ }
@@ -101,14 +113,14 @@ async function fetchCourses() {
 }
 
 function isEnrolled(course) {
-  return courses.value.some(c => c.id === course.id)
+  return enrolledIds.value.has(course.id)
 }
 
 async function enroll(courseId) {
   try {
     await courseApi.enrollCourse(courseId)
+    enrolledIds.value.add(courseId)
     ElMessage.success('选课成功')
-    fetchCourses()
   } catch (e) {
     ElMessage.error(e.message || '选课失败')
   }
@@ -118,8 +130,8 @@ async function unenroll(courseId) {
   try {
     await ElMessageBox.confirm('确定要退选该课程吗？', '确认退课', { type: 'warning' })
     await courseApi.unenrollCourse(courseId)
+    enrolledIds.value.delete(courseId)
     ElMessage.success('退课成功')
-    fetchCourses()
   } catch (e) { /* cancel */ }
 }
 
