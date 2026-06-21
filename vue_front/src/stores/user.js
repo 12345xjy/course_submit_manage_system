@@ -11,7 +11,7 @@ export const useUserStore = defineStore('user', () => {
 
   const isLoggedIn = computed(() => !!token.value)
   const isAdmin = computed(() => role.value === 'ADMIN')
-  const isTeacher = computed(() => role.value === 'TEACHER' || role.value === 'ADMIN')
+  const isTeacher = computed(() => role.value === 'TEACHER')
   const isStudent = computed(() => role.value === 'STUDENT')
 
   function setUserInfo(data) {
