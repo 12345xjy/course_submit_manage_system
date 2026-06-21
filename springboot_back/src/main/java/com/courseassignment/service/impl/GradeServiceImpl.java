@@ -87,6 +87,11 @@ public class GradeServiceImpl implements GradeService {
     }
 
     @Override
+    public List<Grade> findByTeacherId(Long teacherId, Long courseId) {
+        return gradeMapper.findByTeacherId(teacherId, courseId);
+    }
+
+    @Override
     public List<Grade> findByStudentId(Long studentId) {
         return gradeMapper.findByStudentId(studentId);
     }

@@ -11,6 +11,9 @@ export const gradeApi = {
   gradeSubmission(data) {
     return request.post('/teacher/grades', data)
   },
+  getMyTeacherGrades(params) {
+    return request.get('/teacher/grades/mine', { params })
+  },
   getGradesByAssignment(assignmentId) {
     return request.get('/teacher/grades', { params: { assignmentId } })
   },

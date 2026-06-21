@@ -57,6 +57,17 @@ public class GradeController {
     }
 
     /**
+     * 教师 - 查询自己课程的所有批改成绩
+     */
+    @GetMapping("/teacher/grades/mine")
+    @PreAuthorize("hasRole('TEACHER')")
+    public Result<List<Grade>> getMyGradesAsTeacher(@RequestAttribute("userId") Long userId,
+                                                      @RequestParam(required = false) Long courseId) {
+        List<Grade> grades = gradeService.findByTeacherId(userId, courseId);
+        return Result.success(grades);
+    }
+
+    /**
      * 教师 - 查询某作业所有成绩
      */
     @GetMapping("/teacher/grades")

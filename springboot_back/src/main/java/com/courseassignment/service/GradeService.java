@@ -36,6 +36,11 @@ public interface GradeService {
     List<Grade> findByStudentId(Long studentId);
 
     /**
+     * 查询教师的全部批改成绩
+     */
+    List<Grade> findByTeacherId(Long teacherId, Long courseId);
+
+    /**
      * 更新成绩
      */
     Grade update(Long id, GradeRequest request);
