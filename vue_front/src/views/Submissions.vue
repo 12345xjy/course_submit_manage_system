@@ -1,6 +1,6 @@
 <template>
   <div class="submissions-page">
-    <h2>提交记录</h2>
+    <h2 class="page-title" style="margin-bottom:16px;">提交记录</h2>
 
     <el-table :data="submissions" v-loading="loading" stripe>
       <el-table-column prop="assignmentTitle" label="作业标题" min-width="180" />

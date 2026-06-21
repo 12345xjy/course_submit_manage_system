@@ -1,6 +1,6 @@
 <template>
   <div class="profile-page">
-    <h2>个人中心</h2>
+    <h2 class="page-title" style="margin-bottom:16px;">个人中心</h2>
 
     <el-tabs v-model="activeTab">
       <!-- 个人信息 -->

@@ -1,7 +1,7 @@
 <template>
   <div class="notifications-page">
     <div class="page-toolbar">
-      <h2>消息通知</h2>
+      <h2 class="page-title">消息通知</h2>
       <el-button type="primary" text @click="markAllRead">全部标为已读</el-button>
     </div>
 

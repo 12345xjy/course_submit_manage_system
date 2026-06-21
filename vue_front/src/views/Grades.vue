@@ -1,6 +1,6 @@
 <template>
   <div class="grades-page">
-    <h2>成绩管理</h2>
+    <h2 class="page-title" style="margin-bottom:16px;">成绩管理</h2>
 
     <el-table :data="grades" v-loading="loading" stripe>
       <el-table-column prop="assignmentTitle" label="作业标题" min-width="180" />

@@ -1,7 +1,7 @@
 <template>
   <div class="assignments-page">
     <div class="page-toolbar">
-      <h2>作业管理</h2>
+      <h2 class="page-title">作业管理</h2>
       <el-button v-if="userStore.isTeacher" type="primary" @click="showCreateDialog = true">
         <el-icon><Plus /></el-icon> 发布作业
       </el-button>

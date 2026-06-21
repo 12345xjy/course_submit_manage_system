@@ -1,7 +1,7 @@
 <template>
   <div class="admin-users">
     <div class="page-toolbar">
-      <h2>用户管理</h2>
+      <h2 class="page-title">用户管理</h2>
     </div>
 
     <el-row :gutter="16" style="margin-bottom: 16px;">

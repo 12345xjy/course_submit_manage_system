@@ -1,7 +1,7 @@
 <template>
   <div class="courses-page">
     <div class="page-toolbar">
-      <h2>课程管理</h2>
+      <h2 class="page-title">课程管理</h2>
       <el-button v-if="userStore.isTeacher" type="primary" @click="showCreateDialog = true">
         <el-icon><Plus /></el-icon> 创建课程
       </el-button>
