@@ -34,11 +34,18 @@ public class AssignmentController {
     }
 
     /**
-     * 查询作业详情
+     * 查询作业详情（学生只看自己的提交数据）
      */
     @GetMapping("/assignments/{id}")
-    public Result<Assignment> getAssignment(@PathVariable Long id) {
-        Assignment assignment = assignmentService.findById(id);
+    public Result<Assignment> getAssignment(@PathVariable Long id,
+                                             @RequestAttribute(value = "userId", required = false) Long userId,
+                                             @RequestAttribute(value = "role", required = false) String role) {
+        Assignment assignment;
+        if ("STUDENT".equals(role) && userId != null) {
+            assignment = assignmentService.findByIdForStudent(id, userId);
+        } else {
+            assignment = assignmentService.findById(id);
+        }
         return Result.success(assignment);
     }
 

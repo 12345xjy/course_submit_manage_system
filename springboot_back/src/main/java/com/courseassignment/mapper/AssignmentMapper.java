@@ -17,6 +17,12 @@ public interface AssignmentMapper {
             "FROM assignment a LEFT JOIN course c ON a.course_id = c.id WHERE a.id = #{id}")
     Assignment findById(Long id);
 
+    @Select("SELECT a.*, c.name AS course_name, " +
+            "(SELECT COUNT(*) FROM submission s WHERE s.assignment_id = a.id AND s.student_id = #{studentId}) AS submission_count, " +
+            "(SELECT COUNT(*) FROM submission s INNER JOIN grade g ON s.id = g.submission_id WHERE s.assignment_id = a.id AND s.student_id = #{studentId}) AS graded_count " +
+            "FROM assignment a LEFT JOIN course c ON a.course_id = c.id WHERE a.id = #{id}")
+    Assignment findByIdWithStudent(@Param("id") Long id, @Param("studentId") Long studentId);
+
     @Select("<script>" +
             "SELECT a.*, c.name AS course_name, " +
             "(SELECT COUNT(*) FROM submission s WHERE s.assignment_id = a.id) AS submission_count, " +
@@ -29,8 +35,8 @@ public interface AssignmentMapper {
     List<Assignment> findAll(@Param("courseId") Long courseId, @Param("status") Integer status);
 
     @Select("SELECT a.*, c.name AS course_name, " +
-            "(SELECT COUNT(*) FROM submission s WHERE s.assignment_id = a.id) AS submission_count, " +
-            "(SELECT COUNT(*) FROM submission s INNER JOIN grade g ON s.id = g.submission_id WHERE s.assignment_id = a.id) AS graded_count " +
+            "(SELECT COUNT(*) FROM submission s WHERE s.assignment_id = a.id AND s.student_id = #{studentId}) AS submission_count, " +
+            "(SELECT COUNT(*) FROM submission s INNER JOIN grade g ON s.id = g.submission_id WHERE s.assignment_id = a.id AND s.student_id = #{studentId}) AS graded_count " +
             "FROM assignment a LEFT JOIN course c ON a.course_id = c.id " +
             "WHERE a.course_id IN (SELECT course_id FROM course_student WHERE student_id = #{studentId}) " +
             "ORDER BY a.created_at DESC")

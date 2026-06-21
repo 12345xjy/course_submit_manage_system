@@ -21,6 +21,11 @@ public interface AssignmentService {
     Assignment findById(Long id);
 
     /**
+     * 查询作业详情（学生视角，数据只统计该生）
+     */
+    Assignment findByIdForStudent(Long id, Long studentId);
+
+    /**
      * 查询所有作业（支持按课程筛选）
      */
     List<Assignment> findAll(Long courseId, Integer status);

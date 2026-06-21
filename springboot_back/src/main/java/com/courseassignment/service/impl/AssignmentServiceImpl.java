@@ -75,6 +75,15 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
+    public Assignment findByIdForStudent(Long id, Long studentId) {
+        Assignment assignment = assignmentMapper.findByIdWithStudent(id, studentId);
+        if (assignment == null) {
+            throw new RuntimeException("作业不存在");
+        }
+        return assignment;
+    }
+
+    @Override
     public List<Assignment> findAll(Long courseId, Integer status) {
         return assignmentMapper.findAll(courseId, status);
     }
