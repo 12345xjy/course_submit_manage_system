@@ -26,9 +26,9 @@
       <el-table-column prop="maxScore" label="满分" width="80" />
       <el-table-column label="状态" width="100">
         <template #default="{ row }">
-          <el-tag :type="row.status === 1 ? 'success' : 'info'">
-            {{ row.status === 1 ? '进行中' : '已截止' }}
-          </el-tag>
+          <el-tag v-if="row.submissionCount > 0 && userStore.isStudent" type="success">已完成</el-tag>
+          <el-tag v-else-if="row.status === 1" type="warning">进行中</el-tag>
+          <el-tag v-else type="info">已截止</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="提交情况" width="100">
