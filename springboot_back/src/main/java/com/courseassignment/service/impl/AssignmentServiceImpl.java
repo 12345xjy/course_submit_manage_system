@@ -61,6 +61,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             notification.setTitle("新作业发布");
             notification.setContent("课程有新作业：" + request.getTitle() + "，请及时完成并提交。");
             notification.setType("ASSIGNMENT");
+            notification.setIsRead(0);
             notificationMapper.insert(notification);
         }
 

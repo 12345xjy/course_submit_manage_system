@@ -62,6 +62,7 @@ public class GradeServiceImpl implements GradeService {
         notification.setTitle("作业已批改");
         notification.setContent("您的作业「" + submission.getAssignmentTitle() + "」已批改，得分：" + request.getScore() + "分。");
         notification.setType("GRADE");
+        notification.setIsRead(0);
         notificationMapper.insert(notification);
 
         return findById(grade.getId());
