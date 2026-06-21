@@ -57,7 +57,7 @@ public class SubmissionController {
      * 教师 - 查询某作业的所有提交
      */
     @GetMapping("/teacher/submissions")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<List<Submission>> getSubmissionsByAssignment(@RequestParam Long assignmentId) {
         List<Submission> submissions = submissionService.findByAssignmentId(assignmentId);
         return Result.success(submissions);

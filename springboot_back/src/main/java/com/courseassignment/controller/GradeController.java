@@ -27,7 +27,7 @@ public class GradeController {
      * 教师 - 批改评分
      */
     @PostMapping("/teacher/grades")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<Grade> gradeSubmission(@Valid @RequestBody GradeRequest request,
                                           @RequestAttribute("userId") Long userId) {
         try {
@@ -60,7 +60,7 @@ public class GradeController {
      * 教师 - 查询某作业所有成绩
      */
     @GetMapping("/teacher/grades")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<List<Grade>> getGradesByAssignment(@RequestParam Long assignmentId) {
         List<Grade> grades = gradeService.findByAssignmentId(assignmentId);
         return Result.success(grades);
@@ -79,7 +79,7 @@ public class GradeController {
      * 教师 - 更新成绩
      */
     @PutMapping("/teacher/grades/{id}")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<Grade> updateGrade(@PathVariable Long id, @Valid @RequestBody GradeRequest request) {
         Grade grade = gradeService.update(id, request);
         return Result.success("成绩更新成功", grade);
@@ -89,7 +89,7 @@ public class GradeController {
      * 教师 - 删除成绩
      */
     @DeleteMapping("/teacher/grades/{id}")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<Void> deleteGrade(@PathVariable Long id) {
         gradeService.deleteById(id);
         return Result.success();

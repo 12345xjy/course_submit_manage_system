@@ -30,25 +30,25 @@ const routes = [
         path: 'courses',
         name: 'Courses',
         component: () => import('@/views/Courses.vue'),
-        meta: { title: '课程管理' }
+        meta: { title: '课程管理', requiresTeacher: true }
       },
       {
         path: 'courses/:id',
         name: 'CourseDetail',
         component: () => import('@/views/CourseDetail.vue'),
-        meta: { title: '课程详情' }
+        meta: { title: '课程详情', requiresTeacher: true }
       },
       {
         path: 'assignments',
         name: 'Assignments',
         component: () => import('@/views/Assignments.vue'),
-        meta: { title: '作业管理' }
+        meta: { title: '作业管理', requiresTeacher: true }
       },
       {
         path: 'assignments/:id',
         name: 'AssignmentDetail',
         component: () => import('@/views/AssignmentDetail.vue'),
-        meta: { title: '作业详情' }
+        meta: { title: '作业详情', requiresTeacher: true }
       },
       {
         path: 'submissions',
@@ -100,6 +100,12 @@ router.beforeEach((to, from, next) => {
   }
 
   if (to.meta.requiresAdmin && userStore.role !== 'ADMIN') {
+    next('/dashboard')
+    return
+  }
+
+  // 管理员不能访问教师专属页面
+  if (to.meta.requiresTeacher && userStore.role === 'ADMIN') {
     next('/dashboard')
     return
   }

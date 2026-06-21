@@ -45,7 +45,7 @@ public class CourseController {
      * 教师/管理员 - 创建课程
      */
     @PostMapping("/teacher/courses")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<Course> createCourse(@RequestBody Course course,
                                         @RequestAttribute("userId") Long userId,
                                         @RequestAttribute("role") String role) {
@@ -64,7 +64,7 @@ public class CourseController {
      * 教师/管理员 - 更新课程
      */
     @PutMapping("/teacher/courses/{id}")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<Course> updateCourse(@PathVariable Long id, @RequestBody Course course) {
         course.setId(id);
         Course updated = courseService.update(course);
@@ -75,7 +75,7 @@ public class CourseController {
      * 教师/管理员 - 删除课程
      */
     @DeleteMapping("/teacher/courses/{id}")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<Void> deleteCourse(@PathVariable Long id) {
         courseService.deleteById(id);
         return Result.success();
@@ -94,7 +94,7 @@ public class CourseController {
      * 查询我教授的课程（教师视角）
      */
     @GetMapping("/teacher/courses")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<List<Course>> getMyTeachingCourses(@RequestAttribute("userId") Long userId) {
         List<Course> courses = courseService.findAll(userId, null);
         return Result.success(courses);
@@ -128,7 +128,7 @@ public class CourseController {
      * 获取课程的学生列表
      */
     @GetMapping("/teacher/courses/{courseId}/students")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<List<User>> getCourseStudents(@PathVariable Long courseId) {
         List<User> students = courseService.getCourseStudents(courseId);
         students.forEach(s -> s.setPassword(null));

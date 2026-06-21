@@ -53,7 +53,7 @@ public class AssignmentController {
      * 教师 - 创建作业
      */
     @PostMapping("/teacher/assignments")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<Assignment> createAssignment(@Valid @RequestBody AssignmentRequest request) {
         Assignment assignment = assignmentService.create(request);
         return Result.success("作业发布成功", assignment);
@@ -63,7 +63,7 @@ public class AssignmentController {
      * 教师 - 更新作业
      */
     @PutMapping("/teacher/assignments/{id}")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<Assignment> updateAssignment(@PathVariable Long id,
                                                 @Valid @RequestBody AssignmentRequest request) {
         Assignment assignment = assignmentService.update(id, request);
@@ -74,7 +74,7 @@ public class AssignmentController {
      * 教师 - 删除作业
      */
     @DeleteMapping("/teacher/assignments/{id}")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PreAuthorize("hasRole('TEACHER')")
     public Result<Void> deleteAssignment(@PathVariable Long id) {
         assignmentService.deleteById(id);
         return Result.success();

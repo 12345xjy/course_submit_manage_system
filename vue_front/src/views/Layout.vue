@@ -36,7 +36,6 @@
 
         <template v-if="userStore.isAdmin">
           <el-menu-item index="/admin/users"><el-icon><User /></el-icon><template #title>用户管理</template></el-menu-item>
-          <el-menu-item index="/courses"><el-icon><Reading /></el-icon><template #title>课程管理</template></el-menu-item>
         </template>
 
         <el-menu-item index="/notifications">

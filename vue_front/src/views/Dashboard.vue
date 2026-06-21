@@ -82,10 +82,11 @@ import { courseApi } from '@/api/course'
 import { assignmentApi } from '@/api/assignment'
 import { submissionApi } from '@/api/submission'
 import { gradeApi } from '@/api/grade'
-import { Reading, Document, Upload, Trophy, DataAnalysis, ArrowRight } from '@element-plus/icons-vue'
+import { userApi } from '@/api/user'
+import { Reading, Document, Upload, Trophy, DataAnalysis, ArrowRight, User } from '@element-plus/icons-vue'
 
 const userStore = useUserStore()
-const stats = ref({ courseCount: 0, assignmentCount: 0, submissionCount: 0, gradedCount: 0, teacherCourseCount: 0, teacherAssignmentCount: 0 })
+const stats = ref({ courseCount: 0, assignmentCount: 0, submissionCount: 0, gradedCount: 0, teacherCourseCount: 0, teacherAssignmentCount: 0, totalUsers: 0, studentUsers: 0, teacherUsers: 0, adminUsers: 0 })
 
 const currentDate = computed(() => new Date().toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'long' }))
 
@@ -97,6 +98,12 @@ const greetingText = computed(() => {
 })
 
 const statsCards = computed(() => {
+  if (userStore.isAdmin) return [
+    { label: '用户总数', value: stats.value.totalUsers, icon: User, color: '#5b7fff', bg: '#eef1ff', trend: '全部用户' },
+    { label: '学生', value: stats.value.studentUsers, icon: Reading, color: '#52c41a', bg: '#f0fbe9', trend: '学员' },
+    { label: '教师', value: stats.value.teacherUsers, icon: DataAnalysis, color: '#fa8c16', bg: '#fff7e6', trend: '教职工' },
+    { label: '管理员', value: stats.value.adminUsers, icon: Trophy, color: '#722ed1', bg: '#f9f0ff', trend: '系统管理' },
+  ]
   if (userStore.isStudent) return [
     { label: '已选课程', value: stats.value.courseCount, icon: Reading, color: '#5b7fff', bg: '#eef1ff', trend: '学习中' },
     { label: '待提交', value: stats.value.assignmentCount, icon: Document, color: '#fa8c16', bg: '#fff7e6', trend: '进行中' },
@@ -112,20 +119,35 @@ const statsCards = computed(() => {
 })
 
 const quickActions = computed(() => {
+  if (userStore.isAdmin) return [
+    { label: '用户管理', path: '/admin/users', emoji: '👥' },
+    { label: '消息通知', path: '/notifications', emoji: '🔔' },
+    { label: '个人中心', path: '/profile', emoji: '⚙️' },
+  ]
   const actions = [
     { label: '课程管理', path: '/courses', emoji: '📖' },
     { label: '作业管理', path: '/assignments', emoji: '📝' },
     { label: '成绩查看', path: '/grades', emoji: '🏆' },
     { label: '消息通知', path: '/notifications', emoji: '🔔' },
   ]
-  if (userStore.isAdmin) actions.unshift({ label: '用户管理', path: '/admin/users', emoji: '👥' })
   if (userStore.isStudent) actions.splice(2, 0, { label: '提交记录', path: '/submissions', emoji: '📤' })
   return actions
 })
 
 onMounted(async () => {
   try {
-    if (userStore.isStudent) {
+    if (userStore.isAdmin) {
+      const [allUsers, students, teachers, admins] = await Promise.all([
+        userApi.getAllUsers({}),
+        userApi.getAllUsers({ role: 'STUDENT' }),
+        userApi.getAllUsers({ role: 'TEACHER' }),
+        userApi.getAllUsers({ role: 'ADMIN' }),
+      ])
+      stats.value.totalUsers = allUsers.data.length
+      stats.value.studentUsers = students.data.length
+      stats.value.teacherUsers = teachers.data.length
+      stats.value.adminUsers = admins.data.length
+    } else if (userStore.isStudent) {
       const [c, a, s, g] = await Promise.all([courseApi.getMyCourses(), assignmentApi.getMyAssignments(), submissionApi.getMySubmissions(), gradeApi.getMyGrades()])
       stats.value.courseCount = c.data.length
       stats.value.assignmentCount = a.data.filter(x => x.status === 1).length
