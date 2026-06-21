@@ -10,6 +10,11 @@ import java.util.List;
 public interface NotificationService {
 
     /**
+     * 根据ID查询通知
+     */
+    Notification findById(Long id);
+
+    /**
      * 获取用户的通知列表
      */
     List<Notification> findByUserId(Long userId);

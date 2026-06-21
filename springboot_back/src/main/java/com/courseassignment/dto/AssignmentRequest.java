@@ -11,8 +11,7 @@ import java.time.LocalDateTime;
 @Data
 public class AssignmentRequest {
 
-    @NotNull(message = "课程ID不能为空")
-    private Long courseId;
+    private Long courseId; // 创建时必填，更新时选填
 
     @NotBlank(message = "作业标题不能为空")
     private String title;

@@ -72,10 +72,12 @@ public class FileServiceImpl implements FileService {
     public Resource download(String filePath) {
         try {
             String uploadPath = fileUploadProperties.getPath();
-            Path file = Paths.get(uploadPath).resolve(filePath).normalize();
-            URI uri = Objects.requireNonNull(file.toUri());
-            Resource resource = UrlResource.from(uri);
-
+            Path uploadDir = Paths.get(uploadPath).toRealPath();
+            Path file = uploadDir.resolve(filePath).normalize();
+            if (!file.toRealPath().startsWith(uploadDir)) {
+                throw new RuntimeException("非法文件路径");
+            }
+            Resource resource = UrlResource.from(file.toUri());
             if (resource.exists() && resource.isReadable()) {
                 return resource;
             } else {

@@ -37,7 +37,9 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     public Assignment create(AssignmentRequest request) {
         // 验证课程是否存在
-        courseMapper.findById(request.getCourseId());
+        if (courseMapper.findById(request.getCourseId()) == null) {
+            throw new RuntimeException("课程不存在");
+        }
 
         Assignment assignment = new Assignment();
         assignment.setCourseId(request.getCourseId());

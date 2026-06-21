@@ -43,7 +43,11 @@ public class NotificationController {
      * 标记通知为已读
      */
     @PutMapping("/{id}/read")
-    public Result<Void> markAsRead(@PathVariable Long id) {
+    public Result<Void> markAsRead(@PathVariable Long id, @RequestAttribute("userId") Long userId) {
+        var notification = notificationService.findById(id);
+        if (!notification.getUserId().equals(userId)) {
+            return Result.forbidden("无权操作此通知");
+        }
         notificationService.markAsRead(id);
         return Result.success();
     }
@@ -61,7 +65,11 @@ public class NotificationController {
      * 删除通知
      */
     @DeleteMapping("/{id}")
-    public Result<Void> deleteNotification(@PathVariable Long id) {
+    public Result<Void> deleteNotification(@PathVariable Long id, @RequestAttribute("userId") Long userId) {
+        var notification = notificationService.findById(id);
+        if (!notification.getUserId().equals(userId)) {
+            return Result.forbidden("无权操作此通知");
+        }
         notificationService.deleteById(id);
         return Result.success();
     }

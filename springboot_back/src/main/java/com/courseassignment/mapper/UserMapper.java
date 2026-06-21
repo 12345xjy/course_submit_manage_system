@@ -46,7 +46,7 @@ public interface UserMapper {
             "<if test='email != null'> email = #{email},</if>" +
             "<if test='avatar != null'> avatar = #{avatar},</if>" +
             "<if test='status != null'> status = #{status},</if>" +
-            "<if test='password != null and password != \"\"'> password = #{password},</if>" +
+
             "updated_at = NOW() WHERE id = #{id}" +
             "</script>")
     int update(User user);

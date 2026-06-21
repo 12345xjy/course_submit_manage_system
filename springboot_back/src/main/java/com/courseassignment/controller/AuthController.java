@@ -7,10 +7,7 @@ import com.courseassignment.dto.RegisterRequest;
 import com.courseassignment.entity.User;
 import com.courseassignment.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * 认证控制器
@@ -23,11 +20,9 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
 
     public AuthController(UserService userService, PasswordEncoder passwordEncoder) {
-        this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
-    }
 
-    /**
+    public AuthController(UserService userService) {
+        this.userService = userService
      * 用户登录
      */
     @PostMapping("/login")
@@ -38,15 +33,6 @@ public class AuthController {
         } catch (RuntimeException e) {
             return Result.error(401, e.getMessage());
         }
-    }
-
-    /**
-     * [临时] 生成密码哈希 - 获取正确哈希后请删除此端点
-     */
-    @GetMapping("/gen-hash")
-    public Result<Map<String, String>> genHash(@RequestParam(defaultValue = "123456") String pwd) {
-        String hash = passwordEncoder.encode(pwd);
-        return Result.success(Map.of("password", pwd, "bcryptHash", hash));
     }
 
     /**

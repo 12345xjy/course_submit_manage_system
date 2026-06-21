@@ -23,8 +23,8 @@ public interface NotificationMapper {
     @Select("SELECT COUNT(*) FROM notification WHERE user_id = #{userId} AND is_read = 0")
     Long countUnreadByUserId(Long userId);
 
-    @Insert("INSERT INTO notification (user_id, title, content, type) " +
-            "VALUES (#{userId}, #{title}, #{content}, #{type})")
+    @Insert("INSERT INTO notification (user_id, title, content, type, is_read) " +
+            "VALUES (#{userId}, #{title}, #{content}, #{type}, #{isRead})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Notification notification);
 

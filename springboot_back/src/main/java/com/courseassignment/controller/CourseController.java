@@ -47,7 +47,12 @@ public class CourseController {
     @PostMapping("/teacher/courses")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public Result<Course> createCourse(@RequestBody Course course,
-                                        @RequestAttribute("userId") Long userId) {
+                                        @RequestAttribute("userId") Long userId,
+                                        @RequestAttribute("role") String role) {
+        // 非管理员只能为自己创建课程，管理员可为任意教师创建
+        if (!"ADMIN".equals(role)) {
+            course.setTeacherId(userId);
+        }
         if (course.getTeacherId() == null) {
             course.setTeacherId(userId);
         }

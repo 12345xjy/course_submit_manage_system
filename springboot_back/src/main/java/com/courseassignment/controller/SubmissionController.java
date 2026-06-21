@@ -87,10 +87,14 @@ public class SubmissionController {
     }
 
     /**
-     * 删除提交记录
+     * 删除提交记录（仅提交者本人可删除）
      */
     @DeleteMapping("/submissions/{id}")
-    public Result<Void> deleteSubmission(@PathVariable Long id) {
+    public Result<Void> deleteSubmission(@PathVariable Long id, @RequestAttribute("userId") Long userId) {
+        Submission submission = submissionService.findById(id);
+        if (!submission.getStudentId().equals(userId)) {
+            return Result.error("只能删除自己的提交记录");
+        }
         submissionService.deleteById(id);
         return Result.success();
     }

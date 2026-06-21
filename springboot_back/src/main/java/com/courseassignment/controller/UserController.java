@@ -90,9 +90,13 @@ public class UserController {
     @PutMapping("/admin/users/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> toggleUserStatus(@PathVariable Long id, @RequestBody Map<String, Integer> params) {
+        Integer status = params.get("status");
+        if (status == null || (status != 0 && status != 1)) {
+            return Result.error("状态值无效，必须为 0 或 1");
+        }
         User user = new User();
         user.setId(id);
-        user.setStatus(params.get("status"));
+        user.setStatus(status);
         userService.update(user);
         return Result.success();
     }
@@ -102,7 +106,10 @@ public class UserController {
      */
     @DeleteMapping("/admin/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public Result<Void> deleteUser(@PathVariable Long id) {
+    public Result<Void> deleteUser(@PathVariable Long id, @RequestAttribute("userId") Long currentUserId) {
+        if (id.equals(currentUserId)) {
+            return Result.error("不能删除自己的账号");
+        }
         userService.deleteById(id);
         return Result.success();
     }

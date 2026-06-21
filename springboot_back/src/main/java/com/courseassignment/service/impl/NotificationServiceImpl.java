@@ -22,6 +22,11 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    public Notification findById(Long id) {
+        return notificationMapper.findById(id);
+    }
+
+    @Override
     public List<Notification> findByUserId(Long userId) {
         return notificationMapper.findByUserId(userId);
     }
