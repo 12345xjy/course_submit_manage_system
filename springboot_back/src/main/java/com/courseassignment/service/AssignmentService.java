@@ -28,7 +28,7 @@ public interface AssignmentService {
     /**
      * 查询所有作业（支持按课程筛选）
      */
-    List<Assignment> findAll(Long courseId, Integer status);
+    List<Assignment> findAll(Long courseId, Long teacherId, Integer status);
 
     /**
      * 查询学生的作业列表

@@ -29,10 +29,11 @@ public interface AssignmentMapper {
             "(SELECT COUNT(*) FROM submission s INNER JOIN grade g ON s.id = g.submission_id WHERE s.assignment_id = a.id) AS graded_count " +
             "FROM assignment a LEFT JOIN course c ON a.course_id = c.id WHERE 1=1" +
             "<if test='courseId != null'> AND a.course_id = #{courseId}</if>" +
+            "<if test='teacherId != null'> AND c.teacher_id = #{teacherId}</if>" +
             "<if test='status != null'> AND a.status = #{status}</if>" +
             "ORDER BY a.created_at DESC" +
             "</script>")
-    List<Assignment> findAll(@Param("courseId") Long courseId, @Param("status") Integer status);
+    List<Assignment> findAll(@Param("courseId") Long courseId, @Param("teacherId") Long teacherId, @Param("status") Integer status);
 
     @Select("SELECT a.*, c.name AS course_name, " +
             "(SELECT COUNT(*) FROM submission s WHERE s.assignment_id = a.id AND s.student_id = #{studentId}) AS submission_count, " +

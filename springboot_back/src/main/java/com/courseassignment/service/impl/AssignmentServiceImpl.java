@@ -86,8 +86,8 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
-    public List<Assignment> findAll(Long courseId, Integer status) {
-        return assignmentMapper.findAll(courseId, status);
+    public List<Assignment> findAll(Long courseId, Long teacherId, Integer status) {
+        return assignmentMapper.findAll(courseId, teacherId, status);
     }
 
     @Override

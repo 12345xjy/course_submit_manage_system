@@ -28,8 +28,12 @@ public class AssignmentController {
      */
     @GetMapping("/assignments")
     public Result<List<Assignment>> getAllAssignments(@RequestParam(required = false) Long courseId,
-                                                       @RequestParam(required = false) Integer status) {
-        List<Assignment> assignments = assignmentService.findAll(courseId, status);
+                                                       @RequestParam(required = false) Integer status,
+                                                       @RequestAttribute(value = "userId", required = false) Long userId,
+                                                       @RequestAttribute(value = "role", required = false) String role) {
+        // 教师只能看到自己课程的作业
+        Long teacherId = "TEACHER".equals(role) ? userId : null;
+        List<Assignment> assignments = assignmentService.findAll(courseId, teacherId, status);
         return Result.success(assignments);
     }
 
