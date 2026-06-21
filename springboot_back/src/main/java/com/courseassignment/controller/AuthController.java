@@ -17,12 +17,12 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
-
-    public AuthController(UserService userService, PasswordEncoder passwordEncoder) {
 
     public AuthController(UserService userService) {
-        this.userService = userService
+        this.userService = userService;
+    }
+
+    /**
      * 用户登录
      */
     @PostMapping("/login")
