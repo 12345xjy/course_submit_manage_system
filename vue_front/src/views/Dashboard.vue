@@ -13,16 +13,14 @@
     <el-row :gutter="16" class="stats-row">
       <el-col :span="6" v-for="card in statsCards" :key="card.label">
         <div class="stat-card" :style="{ '--accent': card.color }">
-          <div class="stat-icon-box" :style="{ background: card.bg }">
-            <el-icon :size="24" :color="card.color"><component :is="card.icon" /></el-icon>
+          <div class="stat-top">
+            <div class="stat-icon-box" :style="{ background: card.bg }">
+              <el-icon :size="22" :color="card.color"><component :is="card.icon" /></el-icon>
+            </div>
+            <span class="stat-trend" :style="{ color: card.color }">{{ card.trend }}</span>
           </div>
-          <div class="stat-info">
-            <div class="stat-value">{{ card.value }}</div>
-            <div class="stat-label">{{ card.label }}</div>
-          </div>
-          <div class="stat-trend">
-            <span :style="{ color: card.color }">{{ card.trend }}</span>
-          </div>
+          <div class="stat-value">{{ card.value }}</div>
+          <div class="stat-label">{{ card.label }}</div>
         </div>
       </el-col>
     </el-row>
@@ -163,27 +161,29 @@ onMounted(async () => {
 .stats-row .el-col { display: flex; }
 .stat-card {
   --accent: #5b7fff;
-  display: flex; align-items: center; gap: 14px;
-  padding: 20px; background: #fff; border-radius: 14px;
+  display: flex; flex-direction: column; justify-content: center; gap: 10px;
+  padding: 22px 24px; background: #fff; border-radius: 14px;
   border: 1px solid #f0f1f5; transition: all 0.3s;
   cursor: pointer; position: relative; overflow: hidden;
-  height: 96px; width: 100%; box-sizing: border-box;
+  height: 120px; width: 100%; box-sizing: border-box;
 }
 .stat-card::after {
   content: ''; position: absolute; right: -20px; top: -20px;
-  width: 80px; height: 80px; background: var(--accent);
+  width: 96px; height: 96px; background: var(--accent);
   border-radius: 50%; opacity: 0.04; transition: all 0.3s;
 }
 .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); border-color: #e5e6eb; }
-.stat-card:hover::after { opacity: 0.08; width: 100px; height: 100px; }
+.stat-card:hover::after { opacity: 0.08; width: 120px; height: 120px; }
+
+.stat-top { display: flex; align-items: center; justify-content: space-between; width: 100%; }
 .stat-icon-box {
-  width: 48px; height: 48px; border-radius: 12px;
+  width: 44px; height: 44px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .stat-info { flex: 1; min-width: 0; }
-.stat-value { font-size: 28px; font-weight: 700; color: #1d2129; line-height: 1.2; white-space: nowrap; }
-.stat-label { font-size: 13px; color: #86909c; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.stat-trend { font-size: 12px; font-weight: 500; flex-shrink: 0; opacity: 0.7; white-space: nowrap; }
+.stat-value { font-size: 32px; font-weight: 700; color: #1d2129; line-height: 1.1; white-space: nowrap; }
+.stat-label { font-size: 14px; color: #4e5969; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat-trend { font-size: 13px; font-weight: 500; flex-shrink: 0; opacity: 0.85; white-space: nowrap; }
 
 /* ===== 下方区块 ===== */
 .bottom-row { margin-top: 0; }
