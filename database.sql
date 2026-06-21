@@ -170,14 +170,14 @@ CREATE TABLE `notification` (
 -- ============================================================
 
 -- 密码均为: 123456 (bcrypt加密)
--- 实际开发中使用BCryptPasswordEncoder加密，此处插入的是加密后的值
+-- 哈希由 BCryptPasswordEncoder 生成
 INSERT INTO `user` (`username`, `password`, `real_name`, `role`, `student_no`, `teacher_no`, `phone`, `email`) VALUES
-('admin',    '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTTyY3XVqRe', '系统管理员', 'ADMIN',   NULL,       'T00001', '13800000001', 'admin@university.edu.cn'),
-('teacher1', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTTyY3XVqRe', '张教授',     'TEACHER', NULL,       'T00100', '13800000002', 'zhang@university.edu.cn'),
-('teacher2', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTTyY3XVqRe', '李副教授',   'TEACHER', NULL,       'T00101', '13800000003', 'li@university.edu.cn'),
-('student1', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTTyY3XVqRe', '王同学',     'STUDENT', '2021001001', NULL,     '13800000004', 'wang@student.edu.cn'),
-('student2', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTTyY3XVqRe', '陈同学',     'STUDENT', '2021001002', NULL,     '13800000005', 'chen@student.edu.cn'),
-('student3', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBpwTTyY3XVqRe', '刘同学',     'STUDENT', '2021001003', NULL,     '13800000006', 'liu@student.edu.cn');
+('admin',    '$2a$10$blaY2uyVVqAypi.epl1S7uDjOvcVPC8Xq0JNHeqnR/k/ngso41M4W', '系统管理员', 'ADMIN',   NULL,       'T00001', '13800000001', 'admin@university.edu.cn'),
+('teacher1', '$2a$10$blaY2uyVVqAypi.epl1S7uDjOvcVPC8Xq0JNHeqnR/k/ngso41M4W', '张教授',     'TEACHER', NULL,       'T00100', '13800000002', 'zhang@university.edu.cn'),
+('teacher2', '$2a$10$blaY2uyVVqAypi.epl1S7uDjOvcVPC8Xq0JNHeqnR/k/ngso41M4W', '李副教授',   'TEACHER', NULL,       'T00101', '13800000003', 'li@university.edu.cn'),
+('student1', '$2a$10$blaY2uyVVqAypi.epl1S7uDjOvcVPC8Xq0JNHeqnR/k/ngso41M4W', '王同学',     'STUDENT', '2021001001', NULL,     '13800000004', 'wang@student.edu.cn'),
+('student2', '$2a$10$blaY2uyVVqAypi.epl1S7uDjOvcVPC8Xq0JNHeqnR/k/ngso41M4W', '陈同学',     'STUDENT', '2021001002', NULL,     '13800000005', 'chen@student.edu.cn'),
+('student3', '$2a$10$blaY2uyVVqAypi.epl1S7uDjOvcVPC8Xq0JNHeqnR/k/ngso41M4W', '刘同学',     'STUDENT', '2021001003', NULL,     '13800000006', 'liu@student.edu.cn');
 
 -- 课程数据
 INSERT INTO `course` (`name`, `code`, `description`, `teacher_id`, `semester`) VALUES
