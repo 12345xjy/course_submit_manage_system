@@ -100,15 +100,6 @@
     </el-container>
   </el-container>
 </template>
-        </div>
-      </el-header>
-
-      <el-main class="layout-main">
-        <router-view />
-      </el-main>
-    </el-container>
-  </el-container>
-</template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
