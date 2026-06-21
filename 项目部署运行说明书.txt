@@ -124,6 +124,11 @@ Q: 前端报跨域错误？
 A: 后端已配置 CORS，确保通过前端开发服务器（5173端口）访问，
    开发模式下 Vite 已配置代理。
 
+Q: npm install 报 "无法加载文件 npm.ps1，因为在此系统上禁止运行脚本"？
+A: PowerShell 执行策略限制，运行以下命令即可：
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   或者使用 cmd 命令行代替 PowerShell 执行 npm install。
+
 Q: 文件上传失败？
 A: 检查 uploads 目录是否存在且有写入权限，或检查文件大小限制。
 
