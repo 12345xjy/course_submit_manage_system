@@ -37,7 +37,7 @@
       <el-table-column label="状态" width="100">
         <template #default="{ row }">
           <el-tag :type="row.status === 1 ? 'success' : 'info'">
-            {{ row.status === 1 ? '进行中' : '已关闭' }}
+            {{ row.status === 1 ? '进行中' : '已截止' }}
           </el-tag>
         </template>
       </el-table-column>
@@ -73,7 +73,7 @@
         </el-form-item>
         <el-form-item label="截止时间" required>
           <el-date-picker v-model="assignmentForm.deadline" type="datetime" placeholder="选择截止时间"
-            value-format="YYYY-MM-DD HH:mm:ss" style="width:100%" />
+            value-format="YYYY-MM-DD HH:mm:ss" style="width:100%" :disabled-date="disabledDate" />
         </el-form-item>
         <el-form-item label="满分分值">
           <el-input-number v-model="assignmentForm.maxScore" :min="0" :max="200" :step="1" />
@@ -118,6 +118,10 @@ const assignmentForm = ref({
 function formatDate(dateStr) {
   if (!dateStr) return ''
   return new Date(dateStr).toLocaleString('zh-CN')
+}
+
+const disabledDate = (time) => {
+  return time.getTime() < Date.now() - 8.64e7 // 禁用今天之前的日期
 }
 
 async function fetchCourses() {

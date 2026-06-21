@@ -41,6 +41,11 @@ public class AssignmentServiceImpl implements AssignmentService {
             throw new RuntimeException("课程不存在");
         }
 
+        // 截止时间必须在未来
+        if (request.getDeadline() != null && request.getDeadline().isBefore(java.time.LocalDateTime.now())) {
+            throw new RuntimeException("截止时间必须在当前时间之后");
+        }
+
         Assignment assignment = new Assignment();
         assignment.setCourseId(request.getCourseId());
         assignment.setTitle(request.getTitle());
@@ -74,6 +79,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         if (assignment == null) {
             throw new RuntimeException("作业不存在");
         }
+        checkDeadline(assignment);
         return assignment;
     }
 
@@ -83,17 +89,28 @@ public class AssignmentServiceImpl implements AssignmentService {
         if (assignment == null) {
             throw new RuntimeException("作业不存在");
         }
+        checkDeadline(assignment);
         return assignment;
     }
 
     @Override
     public List<Assignment> findAll(Long courseId, Long teacherId, Integer status) {
-        return assignmentMapper.findAll(courseId, teacherId, status);
+        List<Assignment> assignments = assignmentMapper.findAll(courseId, teacherId, status);
+        for (Assignment a : assignments) { checkDeadline(a); }
+        return assignments;
     }
 
     @Override
     public List<Assignment> findByStudentId(Long studentId) {
-        return assignmentMapper.findByStudentId(studentId);
+        List<Assignment> assignments = assignmentMapper.findByStudentId(studentId);
+        for (Assignment a : assignments) { checkDeadline(a); }
+        return assignments;
+    }
+
+    private void checkDeadline(Assignment a) {
+        if (a.getDeadline() != null && a.getDeadline().isBefore(java.time.LocalDateTime.now()) && a.getStatus() != null && a.getStatus() == 1) {
+            a.setStatus(0);
+        }
     }
 
     @Override

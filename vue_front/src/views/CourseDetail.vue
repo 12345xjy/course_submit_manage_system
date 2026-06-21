@@ -27,7 +27,7 @@
       <el-table-column label="状态" width="100">
         <template #default="{ row }">
           <el-tag :type="row.status === 1 ? 'success' : 'info'">
-            {{ row.status === 1 ? '进行中' : '已关闭' }}
+            {{ row.status === 1 ? '进行中' : '已截止' }}
           </el-tag>
         </template>
       </el-table-column>
