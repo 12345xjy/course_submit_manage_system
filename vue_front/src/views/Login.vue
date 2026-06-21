@@ -48,15 +48,21 @@ const rules = {
 }
 
 async function handleLogin() {
-  const valid = await formRef.value.validate().catch(() => false)
-  if (!valid) return
+  if (!form.username || !form.password) {
+    ElMessage.warning('请输入用户名和密码')
+    return
+  }
 
   loading.value = true
   try {
-    await userStore.login(form)
+    await userStore.login({
+      username: form.username,
+      password: form.password
+    })
     ElMessage.success('登录成功')
     router.push('/dashboard')
   } catch (error) {
+    console.error('Login error:', error)
     // 错误已在拦截器中处理
   } finally {
     loading.value = false
