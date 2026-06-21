@@ -210,16 +210,3 @@ async function handleRegister() {
 
 @media (max-width:768px) { .register-container { flex-direction:column; width:94%; } .register-brand { padding:30px 24px; } .register-card { padding:30px 24px; } }
 </style>
-}
-
-.register-footer {
-  text-align: center;
-  color: #909399;
-  font-size: 14px;
-}
-
-.register-footer a {
-  color: #409eff;
-  text-decoration: none;
-}
-</style>

@@ -361,22 +361,3 @@ async function handleLogin() {
   .login-card { padding: 30px 24px; }
 }
 </style>
-  font-weight: normal;
-  margin-bottom: 30px;
-}
-
-.login-btn {
-  width: 100%;
-}
-
-.login-footer {
-  text-align: center;
-  color: #909399;
-  font-size: 14px;
-}
-
-.login-footer a {
-  color: #409eff;
-  text-decoration: none;
-}
-</style>
