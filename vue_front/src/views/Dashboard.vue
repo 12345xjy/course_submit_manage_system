@@ -160,12 +160,14 @@ onMounted(async () => {
 
 /* ===== 统计卡片 ===== */
 .stats-row { margin-bottom: 16px; }
+.stats-row .el-col { display: flex; }
 .stat-card {
   --accent: #5b7fff;
   display: flex; align-items: center; gap: 14px;
   padding: 20px; background: #fff; border-radius: 14px;
   border: 1px solid #f0f1f5; transition: all 0.3s;
   cursor: pointer; position: relative; overflow: hidden;
+  height: 96px; width: 100%; box-sizing: border-box;
 }
 .stat-card::after {
   content: ''; position: absolute; right: -20px; top: -20px;
@@ -178,10 +180,10 @@ onMounted(async () => {
   width: 48px; height: 48px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.stat-info { flex: 1; }
-.stat-value { font-size: 28px; font-weight: 700; color: #1d2129; line-height: 1.2; }
-.stat-label { font-size: 13px; color: #86909c; margin-top: 2px; }
-.stat-trend { font-size: 12px; font-weight: 500; flex-shrink: 0; opacity: 0.7; }
+.stat-info { flex: 1; min-width: 0; }
+.stat-value { font-size: 28px; font-weight: 700; color: #1d2129; line-height: 1.2; white-space: nowrap; }
+.stat-label { font-size: 13px; color: #86909c; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat-trend { font-size: 12px; font-weight: 500; flex-shrink: 0; opacity: 0.7; white-space: nowrap; }
 
 /* ===== 下方区块 ===== */
 .bottom-row { margin-top: 0; }
