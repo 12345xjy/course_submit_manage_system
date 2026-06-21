@@ -14,6 +14,12 @@ spring:
       max-file-size: 50MB
       max-request-size: 100MB
 
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
+
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.courseassignment.entity
