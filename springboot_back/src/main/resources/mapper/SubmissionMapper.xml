@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.courseassignment.mapper.SubmissionMapper">
+
+    <resultMap id="SubmissionMap" type="com.courseassignment.entity.Submission">
+        <id property="id" column="id"/>
+        <result property="assignmentId" column="assignment_id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="fileName" column="file_name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="fileSize" column="file_size"/>
+        <result property="submitTime" column="submit_time"/>
+        <result property="isLate" column="is_late"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="studentName" column="student_name"/>
+        <result property="studentNo" column="student_no"/>
+        <result property="assignmentTitle" column="assignment_title"/>
+        <result property="courseName" column="course_name"/>
+        <result property="score" column="score"/>
+        <result property="comment" column="comment"/>
+    </resultMap>
+
+    <!-- 多表联查：submission + user + assignment + course + grade -->
+    <select id="findById" resultMap="SubmissionMap">
+        SELECT s.*, u.real_name AS student_name, u.student_no,
+            a.title AS assignment_title, c.name AS course_name, g.score, g.comment
+        FROM submission s
+        LEFT JOIN user u ON s.student_id = u.id
+        LEFT JOIN assignment a ON s.assignment_id = a.id
+        LEFT JOIN course c ON a.course_id = c.id
+        LEFT JOIN grade g ON s.id = g.submission_id
+        WHERE s.id = #{id}
+    </select>
+
+    <select id="findByAssignmentId" resultMap="SubmissionMap">
+        SELECT s.*, u.real_name AS student_name, u.student_no,
+            a.title AS assignment_title, c.name AS course_name, g.score, g.comment
+        FROM submission s
+        LEFT JOIN user u ON s.student_id = u.id
+        LEFT JOIN assignment a ON s.assignment_id = a.id
+        LEFT JOIN course c ON a.course_id = c.id
+        LEFT JOIN grade g ON s.id = g.submission_id
+        WHERE s.assignment_id = #{assignmentId}
+        ORDER BY s.submit_time DESC
+    </select>
+
+    <select id="findByStudentId" resultMap="SubmissionMap">
+        SELECT s.*, u.real_name AS student_name, u.student_no,
+            a.title AS assignment_title, c.name AS course_name, g.score, g.comment
+        FROM submission s
+        LEFT JOIN user u ON s.student_id = u.id
+        LEFT JOIN assignment a ON s.assignment_id = a.id
+        LEFT JOIN course c ON a.course_id = c.id
+        LEFT JOIN grade g ON s.id = g.submission_id
+        WHERE s.student_id = #{studentId}
+        ORDER BY s.submit_time DESC
+    </select>
+
+    <select id="findByAssignmentAndStudent" resultMap="SubmissionMap">
+        SELECT s.*, u.real_name AS student_name, u.student_no,
+            a.title AS assignment_title, c.name AS course_name, g.score, g.comment
+        FROM submission s
+        LEFT JOIN user u ON s.student_id = u.id
+        LEFT JOIN assignment a ON s.assignment_id = a.id
+        LEFT JOIN course c ON a.course_id = c.id
+        LEFT JOIN grade g ON s.id = g.submission_id
+        WHERE s.assignment_id = #{assignmentId} AND s.student_id = #{studentId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO submission (assignment_id, student_id, file_name, file_path, file_size, is_late, status)
+        VALUES (#{assignmentId}, #{studentId}, #{fileName}, #{filePath}, #{fileSize}, #{isLate}, #{status})
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE submission SET status = #{status}, updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM submission WHERE id = #{id}
+    </delete>
+
+    <select id="countByAssignmentId" resultType="long">
+        SELECT COUNT(*) FROM submission WHERE assignment_id = #{assignmentId}
+    </select>
+
+    <select id="countByAssignmentAndStudent" resultType="long">
+        SELECT COUNT(*) FROM submission WHERE assignment_id = #{assignmentId} AND student_id = #{studentId}
+    </select>
+
+</mapper>

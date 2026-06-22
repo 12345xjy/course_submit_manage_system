@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.courseassignment.mapper.GradeMapper">
+
+    <resultMap id="GradeMap" type="com.courseassignment.entity.Grade">
+        <id property="id" column="id"/>
+        <result property="submissionId" column="submission_id"/>
+        <result property="score" column="score"/>
+        <result property="comment" column="comment"/>
+        <result property="gradedBy" column="graded_by"/>
+        <result property="gradedTime" column="graded_time"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="gradedByName" column="graded_by_name"/>
+        <result property="studentName" column="student_name"/>
+        <result property="assignmentTitle" column="assignment_title"/>
+    </resultMap>
+
+    <!-- 多表联查：grade + user(批改人) + submission + user(学生) + assignment（5表联查） -->
+    <select id="findById" resultMap="GradeMap">
+        SELECT g.*, u.real_name AS graded_by_name, su.real_name AS student_name, a.title AS assignment_title
+        FROM grade g
+        LEFT JOIN user u ON g.graded_by = u.id
+        LEFT JOIN submission s ON g.submission_id = s.id
+        LEFT JOIN user su ON s.student_id = su.id
+        LEFT JOIN assignment a ON s.assignment_id = a.id
+        WHERE g.id = #{id}
+    </select>
+
+    <select id="findBySubmissionId" resultMap="GradeMap">
+        SELECT g.*, u.real_name AS graded_by_name, su.real_name AS student_name, a.title AS assignment_title
+        FROM grade g
+        LEFT JOIN user u ON g.graded_by = u.id
+        LEFT JOIN submission s ON g.submission_id = s.id
+        LEFT JOIN user su ON s.student_id = su.id
+        LEFT JOIN assignment a ON s.assignment_id = a.id
+        WHERE g.submission_id = #{submissionId}
+    </select>
+
+    <!-- 5表联查：按作业ID查询成绩列表 -->
+    <select id="findByAssignmentId" resultMap="GradeMap">
+        SELECT g.*, u.real_name AS graded_by_name, su.real_name AS student_name, a.title AS assignment_title, c.name AS course_name
+        FROM grade g
+        LEFT JOIN user u ON g.graded_by = u.id
+        LEFT JOIN submission s ON g.submission_id = s.id
+        LEFT JOIN user su ON s.student_id = su.id
+        LEFT JOIN assignment a ON s.assignment_id = a.id
+        LEFT JOIN course c ON a.course_id = c.id
+        WHERE s.assignment_id = #{assignmentId}
+        ORDER BY g.graded_time DESC
+    </select>
+
+    <!-- 按教师ID查询成绩列表：动态SQL + 多条件过滤 -->
+    <select id="findByTeacherId" resultMap="GradeMap">
+        SELECT g.*, u.real_name AS graded_by_name, su.real_name AS student_name, a.title AS assignment_title, c.name AS course_name
+        FROM grade g
+        LEFT JOIN user u ON g.graded_by = u.id
+        LEFT JOIN submission s ON g.submission_id = s.id
+        LEFT JOIN user su ON s.student_id = su.id
+        LEFT JOIN assignment a ON s.assignment_id = a.id
+        LEFT JOIN course c ON a.course_id = c.id
+        WHERE c.teacher_id = #{teacherId}
+        <if test="courseId != null"> AND a.course_id = #{courseId} </if>
+        ORDER BY g.graded_time DESC
+    </select>
+
+    <select id="findByStudentId" resultMap="GradeMap">
+        SELECT g.*, u.real_name AS graded_by_name, su.real_name AS student_name, a.title AS assignment_title
+        FROM grade g
+        LEFT JOIN user u ON g.graded_by = u.id
+        LEFT JOIN submission s ON g.submission_id = s.id
+        LEFT JOIN user su ON s.student_id = su.id
+        LEFT JOIN assignment a ON s.assignment_id = a.id
+        WHERE s.student_id = #{studentId}
+        ORDER BY g.graded_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO grade (submission_id, score, comment, graded_by)
+        VALUES (#{submissionId}, #{score}, #{comment}, #{gradedBy})
+    </insert>
+
+    <update id="update">
+        UPDATE grade SET
+        <if test="score != null"> score = #{score}, </if>
+        <if test="comment != null"> comment = #{comment}, </if>
+        updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM grade WHERE id = #{id}
+    </delete>
+
+</mapper>

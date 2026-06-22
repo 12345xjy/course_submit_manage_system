@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.courseassignment.mapper.CourseMapper">
+
+    <resultMap id="CourseMap" type="com.courseassignment.entity.Course">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="code" column="code"/>
+        <result property="description" column="description"/>
+        <result property="teacherId" column="teacher_id"/>
+        <result property="semester" column="semester"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="teacherName" column="teacher_name"/>
+        <result property="studentCount" column="student_count"/>
+    </resultMap>
+
+    <!-- 多表联查：course + user + course_student -->
+    <select id="findById" resultMap="CourseMap">
+        SELECT c.*, u.real_name AS teacher_name,
+            (SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = c.id) AS student_count
+        FROM course c LEFT JOIN user u ON c.teacher_id = u.id
+        WHERE c.id = #{id}
+    </select>
+
+    <!-- 动态多表联查 -->
+    <select id="findAll" resultMap="CourseMap">
+        SELECT c.*, u.real_name AS teacher_name,
+            (SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = c.id) AS student_count
+        FROM course c LEFT JOIN user u ON c.teacher_id = u.id WHERE 1=1
+        <if test="teacherId != null"> AND c.teacher_id = #{teacherId} </if>
+        <if test="keyword != null and keyword != ''">
+            AND (c.name LIKE CONCAT('%', #{keyword}, '%') OR c.code LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY c.created_at DESC
+    </select>
+
+    <!-- 学生选课列表 -->
+    <select id="findByStudentId" resultMap="CourseMap">
+        SELECT c.*, u.real_name AS teacher_name,
+            (SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = c.id) AS student_count
+        FROM course c LEFT JOIN user u ON c.teacher_id = u.id
+        WHERE c.id IN (SELECT course_id FROM course_student WHERE student_id = #{studentId})
+        ORDER BY c.created_at DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO course (name, code, description, teacher_id, semester)
+        VALUES (#{name}, #{code}, #{description}, #{teacherId}, #{semester})
+    </insert>
+
+    <update id="update">
+        UPDATE course SET
+        <if test="name != null"> name = #{name}, </if>
+        <if test="description != null"> description = #{description}, </if>
+        <if test="semester != null"> semester = #{semester}, </if>
+        <if test="status != null"> status = #{status}, </if>
+        updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM course WHERE id = #{id}
+    </delete>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM course
+    </select>
+
+</mapper>

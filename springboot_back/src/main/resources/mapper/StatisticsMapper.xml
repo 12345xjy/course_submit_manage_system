@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.courseassignment.mapper.StatisticsMapper">
+
+    <!-- ===== CourseStatsDTO ResultMap ===== -->
+    <resultMap id="CourseStatsMap" type="com.courseassignment.dto.CourseStatsDTO">
+        <id property="courseId" column="course_id"/>
+        <result property="courseName" column="course_name"/>
+        <result property="courseCode" column="course_code"/>
+        <result property="teacherName" column="teacher_name"/>
+        <result property="semester" column="semester"/>
+        <result property="enrolledCount" column="enrolled_count"/>
+        <result property="assignmentCount" column="assignment_count"/>
+        <result property="submittedCount" column="submitted_count"/>
+        <result property="unsubmittedCount" column="unsubmitted_count"/>
+        <result property="submissionRate" column="submission_rate"/>
+        <result property="lateCount" column="late_count"/>
+        <result property="lateRate" column="late_rate"/>
+        <result property="averageScore" column="average_score"/>
+        <result property="highestScore" column="highest_score"/>
+        <result property="lowestScore" column="lowest_score"/>
+        <result property="passRate" column="pass_rate"/>
+        <result property="gradedCount" column="graded_count"/>
+    </resultMap>
+
+    <!-- ===== StudentGradeSummaryDTO ResultMap ===== -->
+    <resultMap id="StudentGradeMap" type="com.courseassignment.dto.StudentGradeSummaryDTO">
+        <id property="studentId" column="student_id"/>
+        <result property="studentName" column="student_name"/>
+        <result property="studentNo" column="student_no"/>
+        <result property="enrolledCourseCount" column="enrolled_course_count"/>
+        <result property="totalAssignments" column="total_assignments"/>
+        <result property="submittedCount" column="submitted_count"/>
+        <result property="gradedCount" column="graded_count"/>
+        <result property="submissionRate" column="submission_rate"/>
+        <result property="overallAverage" column="overall_average"/>
+        <result property="highestScore" column="highest_score"/>
+        <result property="lowestScore" column="lowest_score"/>
+        <result property="passCount" column="pass_count"/>
+        <result property="failCount" column="fail_count"/>
+        <result property="passRate" column="pass_rate"/>
+    </resultMap>
+
+    <!-- ===== AssignmentStatsDTO ResultMap ===== -->
+    <resultMap id="AssignmentStatsMap" type="com.courseassignment.dto.AssignmentStatsDTO">
+        <id property="assignmentId" column="assignment_id"/>
+        <result property="assignmentTitle" column="assignment_title"/>
+        <result property="courseName" column="course_name"/>
+        <result property="teacherName" column="teacher_name"/>
+        <result property="deadline" column="deadline"/>
+        <result property="maxScore" column="max_score"/>
+        <result property="totalStudents" column="total_students"/>
+        <result property="submittedCount" column="submitted_count"/>
+        <result property="unsubmittedCount" column="unsubmitted_count"/>
+        <result property="submissionRate" column="submission_rate"/>
+        <result property="onTimeCount" column="on_time_count"/>
+        <result property="lateCount" column="late_count"/>
+        <result property="lateRate" column="late_rate"/>
+        <result property="gradedCount" column="graded_count"/>
+        <result property="ungradedCount" column="ungraded_count"/>
+        <result property="gradingProgress" column="grading_progress"/>
+        <result property="averageScore" column="average_score"/>
+        <result property="highestScore" column="highest_score"/>
+        <result property="lowestScore" column="lowest_score"/>
+    </resultMap>
+
+    <!-- ===== TeacherWorkloadDTO ResultMap ===== -->
+    <resultMap id="TeacherWorkloadMap" type="com.courseassignment.dto.TeacherWorkloadDTO">
+        <id property="teacherId" column="teacher_id"/>
+        <result property="teacherName" column="teacher_name"/>
+        <result property="teacherNo" column="teacher_no"/>
+        <result property="courseCount" column="course_count"/>
+        <result property="totalStudents" column="total_students"/>
+        <result property="assignmentCount" column="assignment_count"/>
+        <result property="totalSubmissions" column="total_submissions"/>
+        <result property="totalLateSubmissions" column="total_late_submissions"/>
+        <result property="lateRate" column="late_rate"/>
+        <result property="gradedCount" column="graded_count"/>
+        <result property="pendingGradingCount" column="pending_grading_count"/>
+        <result property="gradingProgress" column="grading_progress"/>
+        <result property="averageScoreGiven" column="average_score_given"/>
+    </resultMap>
+
+    <!-- ====================================================================
+         1. 课程综合统计 —— 6表联查 + 嵌套子查询 + 多聚合函数
+         表: user + course + course_student + assignment + submission + grade
+         ==================================================================== -->
+    <select id="getCourseComprehensiveStats" resultMap="CourseStatsMap">
+        SELECT
+            c.id AS course_id, c.name AS course_name, c.code AS course_code,
+            u.real_name AS teacher_name, c.semester,
+            (SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = c.id) AS enrolled_count,
+            (SELECT COUNT(*) FROM assignment a WHERE a.course_id = c.id) AS assignment_count,
+            (SELECT COUNT(DISTINCT sub.id) FROM assignment a2
+             INNER JOIN submission sub ON sub.assignment_id = a2.id
+             WHERE a2.course_id = c.id) AS submitted_count,
+            (SELECT (SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = c.id)
+                  * (SELECT COUNT(*) FROM assignment a WHERE a.course_id = c.id)
+                  - (SELECT COUNT(DISTINCT sub.id) FROM assignment a2
+                     INNER JOIN submission sub ON sub.assignment_id = a2.id
+                     WHERE a2.course_id = c.id)) AS unsubmitted_count,
+            ROUND((SELECT COUNT(DISTINCT sub.id) FROM assignment a2
+             INNER JOIN submission sub ON sub.assignment_id = a2.id WHERE a2.course_id = c.id)
+             * 100.0 / NULLIF((SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = c.id)
+             * (SELECT COUNT(*) FROM assignment a WHERE a.course_id = c.id), 0), 1) AS submission_rate,
+            (SELECT COUNT(*) FROM assignment a2 INNER JOIN submission sub ON sub.assignment_id = a2.id
+             WHERE a2.course_id = c.id AND sub.is_late = 1) AS late_count,
+            ROUND((SELECT COUNT(*) FROM assignment a2 INNER JOIN submission sub ON sub.assignment_id = a2.id
+             WHERE a2.course_id = c.id AND sub.is_late = 1) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM assignment a2 INNER JOIN submission sub ON sub.assignment_id = a2.id
+             WHERE a2.course_id = c.id), 0), 1) AS late_rate,
+            ROUND((SELECT AVG(g.score) FROM grade g INNER JOIN submission s ON g.submission_id = s.id
+             INNER JOIN assignment a3 ON s.assignment_id = a3.id WHERE a3.course_id = c.id), 1) AS average_score,
+            (SELECT MAX(g.score) FROM grade g INNER JOIN submission s ON g.submission_id = s.id
+             INNER JOIN assignment a3 ON s.assignment_id = a3.id WHERE a3.course_id = c.id) AS highest_score,
+            (SELECT MIN(g.score) FROM grade g INNER JOIN submission s ON g.submission_id = s.id
+             INNER JOIN assignment a3 ON s.assignment_id = a3.id WHERE a3.course_id = c.id) AS lowest_score,
+            ROUND((SELECT COUNT(*) FROM grade g INNER JOIN submission s ON g.submission_id = s.id
+             INNER JOIN assignment a3 ON s.assignment_id = a3.id
+             WHERE a3.course_id = c.id AND g.score >= 60) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM grade g INNER JOIN submission s ON g.submission_id = s.id
+             INNER JOIN assignment a3 ON s.assignment_id = a3.id WHERE a3.course_id = c.id), 0), 1) AS pass_rate,
+            (SELECT COUNT(*) FROM grade g INNER JOIN submission s ON g.submission_id = s.id
+             INNER JOIN assignment a3 ON s.assignment_id = a3.id WHERE a3.course_id = c.id) AS graded_count
+        FROM course c LEFT JOIN user u ON c.teacher_id = u.id
+        WHERE 1=1
+        <if test="teacherId != null"> AND c.teacher_id = #{teacherId} </if>
+        <if test="keyword != null and keyword != ''">
+            AND (c.name LIKE CONCAT('%', #{keyword}, '%') OR c.code LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY c.created_at DESC
+    </select>
+
+    <!-- ====================================================================
+         2. 单课程详细统计
+         ==================================================================== -->
+    <select id="getSingleCourseStats" resultMap="CourseStatsMap">
+        SELECT
+            c.id AS course_id, c.name AS course_name, c.code AS course_code,
+            u.real_name AS teacher_name, c.semester,
+            (SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = c.id) AS enrolled_count,
+            (SELECT COUNT(*) FROM assignment a WHERE a.course_id = c.id) AS assignment_count,
+            (SELECT COUNT(DISTINCT sub.id) FROM assignment a2 INNER JOIN submission sub ON sub.assignment_id = a2.id
+             WHERE a2.course_id = c.id) AS submitted_count,
+            (SELECT (SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = c.id)
+                  * (SELECT COUNT(*) FROM assignment a WHERE a.course_id = c.id)
+                  - (SELECT COUNT(DISTINCT sub.id) FROM assignment a2 INNER JOIN submission sub ON sub.assignment_id = a2.id
+                     WHERE a2.course_id = c.id)) AS unsubmitted_count,
+            ROUND((SELECT COUNT(DISTINCT sub.id) FROM assignment a2 INNER JOIN submission sub ON sub.assignment_id = a2.id
+             WHERE a2.course_id = c.id) * 100.0 / NULLIF((SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = c.id)
+             * (SELECT COUNT(*) FROM assignment a WHERE a.course_id = c.id), 0), 1) AS submission_rate,
+            (SELECT COUNT(*) FROM assignment a2 INNER JOIN submission sub ON sub.assignment_id = a2.id
+             WHERE a2.course_id = c.id AND sub.is_late = 1) AS late_count,
+            ROUND((SELECT COUNT(*) FROM assignment a2 INNER JOIN submission sub ON sub.assignment_id = a2.id
+             WHERE a2.course_id = c.id AND sub.is_late = 1) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM assignment a2 INNER JOIN submission sub ON sub.assignment_id = a2.id
+             WHERE a2.course_id = c.id), 0), 1) AS late_rate,
+            ROUND((SELECT AVG(g.score) FROM grade g INNER JOIN submission s ON g.submission_id = s.id
+             INNER JOIN assignment a3 ON s.assignment_id = a3.id WHERE a3.course_id = c.id), 1) AS average_score,
+            (SELECT MAX(g.score) FROM grade g INNER JOIN submission s ON g.submission_id = s.id
+             INNER JOIN assignment a3 ON s.assignment_id = a3.id WHERE a3.course_id = c.id) AS highest_score,
+            (SELECT MIN(g.score) FROM grade g INNER JOIN submission s ON g.submission_id = s.id
+             INNER JOIN assignment a3 ON s.assignment_id = a3.id WHERE a3.course_id = c.id) AS lowest_score,
+            ROUND((SELECT COUNT(*) FROM grade g INNER JOIN submission s ON g.submission_id = s.id
+             INNER JOIN assignment a3 ON s.assignment_id = a3.id WHERE a3.course_id = c.id AND g.score >= 60) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM grade g INNER JOIN submission s ON g.submission_id = s.id
+             INNER JOIN assignment a3 ON s.assignment_id = a3.id WHERE a3.course_id = c.id), 0), 1) AS pass_rate,
+            (SELECT COUNT(*) FROM grade g INNER JOIN submission s ON g.submission_id = s.id
+             INNER JOIN assignment a3 ON s.assignment_id = a3.id WHERE a3.course_id = c.id) AS graded_count
+        FROM course c LEFT JOIN user u ON c.teacher_id = u.id
+        WHERE c.id = #{courseId}
+    </select>
+
+    <!-- ====================================================================
+         3. 学生成绩汇总 —— 5表联查 + 相关子查询 + 条件聚合
+         ==================================================================== -->
+    <select id="getStudentGradeSummary" resultMap="StudentGradeMap">
+        SELECT
+            stu.id AS student_id, stu.real_name AS student_name, stu.student_no,
+            (SELECT COUNT(*) FROM course_student cs WHERE cs.student_id = stu.id) AS enrolled_course_count,
+            (SELECT COUNT(*) FROM assignment a WHERE a.course_id IN
+                (SELECT course_id FROM course_student cs WHERE cs.student_id = stu.id)) AS total_assignments,
+            (SELECT COUNT(*) FROM submission sub WHERE sub.student_id = stu.id) AS submitted_count,
+            (SELECT COUNT(DISTINCT sub.id) FROM submission sub
+             INNER JOIN grade g ON g.submission_id = sub.id WHERE sub.student_id = stu.id) AS graded_count,
+            ROUND((SELECT COUNT(*) FROM submission sub WHERE sub.student_id = stu.id) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM assignment a WHERE a.course_id IN
+                (SELECT course_id FROM course_student cs WHERE cs.student_id = stu.id)), 0), 1) AS submission_rate,
+            ROUND((SELECT AVG(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id), 1) AS overall_average,
+            (SELECT MAX(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id) AS highest_score,
+            (SELECT MIN(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id) AS lowest_score,
+            (SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id AND g.score >= 60) AS pass_count,
+            (SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id AND g.score <![CDATA[ < ]]> 60) AS fail_count,
+            ROUND((SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id AND g.score >= 60) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id), 0), 1) AS pass_rate
+        FROM user stu WHERE stu.role = 'STUDENT'
+        <if test="keyword != null and keyword != ''">
+            AND (stu.real_name LIKE CONCAT('%', #{keyword}, '%') OR stu.student_no LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY overall_average DESC
+    </select>
+
+    <select id="getSingleStudentSummary" resultMap="StudentGradeMap">
+        SELECT stu.id AS student_id, stu.real_name AS student_name, stu.student_no,
+            (SELECT COUNT(*) FROM course_student cs WHERE cs.student_id = stu.id) AS enrolled_course_count,
+            (SELECT COUNT(*) FROM assignment a WHERE a.course_id IN
+                (SELECT course_id FROM course_student cs WHERE cs.student_id = stu.id)) AS total_assignments,
+            (SELECT COUNT(*) FROM submission sub WHERE sub.student_id = stu.id) AS submitted_count,
+            (SELECT COUNT(DISTINCT sub.id) FROM submission sub
+             INNER JOIN grade g ON g.submission_id = sub.id WHERE sub.student_id = stu.id) AS graded_count,
+            ROUND((SELECT COUNT(*) FROM submission sub WHERE sub.student_id = stu.id) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM assignment a WHERE a.course_id IN
+                (SELECT course_id FROM course_student cs WHERE cs.student_id = stu.id)), 0), 1) AS submission_rate,
+            ROUND((SELECT AVG(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id), 1) AS overall_average,
+            (SELECT MAX(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id) AS highest_score,
+            (SELECT MIN(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id) AS lowest_score,
+            (SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id AND g.score >= 60) AS pass_count,
+            (SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id AND g.score <![CDATA[ < ]]> 60) AS fail_count,
+            ROUND((SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id AND g.score >= 60) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = stu.id), 0), 1) AS pass_rate
+        FROM user stu WHERE stu.id = #{studentId}
+    </select>
+
+    <!-- ====================================================================
+         4. 课程学生成绩排名
+         ==================================================================== -->
+    <select id="getStudentRankingByCourse" resultMap="StudentGradeMap">
+        SELECT stu.id AS student_id, stu.real_name AS student_name, stu.student_no,
+            (SELECT COUNT(*) FROM course_student cs WHERE cs.student_id = stu.id) AS enrolled_course_count,
+            (SELECT COUNT(*) FROM assignment a WHERE a.course_id IN
+                (SELECT course_id FROM course_student cs WHERE cs.student_id = stu.id)) AS total_assignments,
+            (SELECT COUNT(*) FROM submission sub WHERE sub.student_id = stu.id) AS submitted_count,
+            (SELECT COUNT(DISTINCT sub.id) FROM submission sub
+             INNER JOIN grade g ON g.submission_id = sub.id WHERE sub.student_id = stu.id) AS graded_count,
+            ROUND((SELECT COUNT(*) FROM submission sub WHERE sub.student_id = stu.id) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM assignment a WHERE a.course_id IN
+                (SELECT course_id FROM course_student cs WHERE cs.student_id = stu.id)), 0), 1) AS submission_rate,
+            ROUND((SELECT AVG(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a4 ON sub.assignment_id = a4.id
+             WHERE sub.student_id = stu.id AND a4.course_id = #{courseId}), 1) AS overall_average,
+            (SELECT MAX(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a4 ON sub.assignment_id = a4.id
+             WHERE sub.student_id = stu.id AND a4.course_id = #{courseId}) AS highest_score,
+            (SELECT MIN(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a4 ON sub.assignment_id = a4.id
+             WHERE sub.student_id = stu.id AND a4.course_id = #{courseId}) AS lowest_score,
+            (SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a4 ON sub.assignment_id = a4.id
+             WHERE sub.student_id = stu.id AND a4.course_id = #{courseId} AND g.score >= 60) AS pass_count,
+            (SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a4 ON sub.assignment_id = a4.id
+             WHERE sub.student_id = stu.id AND a4.course_id = #{courseId} AND g.score <![CDATA[ < ]]> 60) AS fail_count,
+            ROUND((SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a4 ON sub.assignment_id = a4.id
+             WHERE sub.student_id = stu.id AND a4.course_id = #{courseId} AND g.score >= 60) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a4 ON sub.assignment_id = a4.id
+             WHERE sub.student_id = stu.id AND a4.course_id = #{courseId}), 0), 1) AS pass_rate
+        FROM user stu
+        INNER JOIN course_student cs ON cs.student_id = stu.id
+        WHERE cs.course_id = #{courseId}
+        ORDER BY overall_average DESC
+    </select>
+
+    <!-- ====================================================================
+         5. 作业维度统计 —— 4表联查 + 分数段分布
+         ==================================================================== -->
+    <select id="getAssignmentStatsByCourse" resultMap="AssignmentStatsMap">
+        SELECT
+            a.id AS assignment_id, a.title AS assignment_title, a.deadline, a.max_score,
+            c.name AS course_name, u.real_name AS teacher_name,
+            (SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = a.course_id) AS total_students,
+            (SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id) AS submitted_count,
+            (SELECT (SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = a.course_id)
+                  - (SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id)) AS unsubmitted_count,
+            ROUND((SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = a.course_id), 0), 1) AS submission_rate,
+            (SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id AND sub.is_late = 0) AS on_time_count,
+            (SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id AND sub.is_late = 1) AS late_count,
+            ROUND((SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id AND sub.is_late = 1) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id), 0), 1) AS late_rate,
+            (SELECT COUNT(*) FROM submission sub INNER JOIN grade g ON g.submission_id = sub.id
+             WHERE sub.assignment_id = a.id) AS graded_count,
+            (SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id)
+            - (SELECT COUNT(*) FROM submission sub INNER JOIN grade g ON g.submission_id = sub.id
+               WHERE sub.assignment_id = a.id) AS ungraded_count,
+            ROUND((SELECT COUNT(*) FROM submission sub INNER JOIN grade g ON g.submission_id = sub.id
+             WHERE sub.assignment_id = a.id) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id), 0), 1) AS grading_progress,
+            ROUND((SELECT AVG(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.assignment_id = a.id), 1) AS average_score,
+            (SELECT MAX(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.assignment_id = a.id) AS highest_score,
+            (SELECT MIN(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.assignment_id = a.id) AS lowest_score
+        FROM assignment a
+        LEFT JOIN course c ON a.course_id = c.id
+        LEFT JOIN user u ON c.teacher_id = u.id
+        WHERE a.course_id = #{courseId}
+        ORDER BY a.created_at DESC
+    </select>
+
+    <select id="getSingleAssignmentStats" resultMap="AssignmentStatsMap">
+        SELECT a.id AS assignment_id, a.title AS assignment_title, a.deadline, a.max_score,
+            c.name AS course_name, u.real_name AS teacher_name,
+            (SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = a.course_id) AS total_students,
+            (SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id) AS submitted_count,
+            (SELECT (SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = a.course_id)
+                  - (SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id)) AS unsubmitted_count,
+            ROUND((SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM course_student cs WHERE cs.course_id = a.course_id), 0), 1) AS submission_rate,
+            (SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id AND sub.is_late = 0) AS on_time_count,
+            (SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id AND sub.is_late = 1) AS late_count,
+            ROUND((SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id AND sub.is_late = 1) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id), 0), 1) AS late_rate,
+            (SELECT COUNT(*) FROM submission sub INNER JOIN grade g ON g.submission_id = sub.id
+             WHERE sub.assignment_id = a.id) AS graded_count,
+            (SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id)
+            - (SELECT COUNT(*) FROM submission sub INNER JOIN grade g ON g.submission_id = sub.id
+               WHERE sub.assignment_id = a.id) AS ungraded_count,
+            ROUND((SELECT COUNT(*) FROM submission sub INNER JOIN grade g ON g.submission_id = sub.id
+             WHERE sub.assignment_id = a.id) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM submission sub WHERE sub.assignment_id = a.id), 0), 1) AS grading_progress,
+            ROUND((SELECT AVG(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.assignment_id = a.id), 1) AS average_score,
+            (SELECT MAX(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.assignment_id = a.id) AS highest_score,
+            (SELECT MIN(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.assignment_id = a.id) AS lowest_score
+        FROM assignment a LEFT JOIN course c ON a.course_id = c.id LEFT JOIN user u ON c.teacher_id = u.id
+        WHERE a.id = #{assignmentId}
+    </select>
+
+    <!-- ====================================================================
+         6. 教师工作负载统计 —— 5表联查 + 去重计数
+         ==================================================================== -->
+    <select id="getTeacherWorkloadStats" resultMap="TeacherWorkloadMap">
+        SELECT
+            t.id AS teacher_id, t.real_name AS teacher_name, t.teacher_no,
+            (SELECT COUNT(*) FROM course c WHERE c.teacher_id = t.id) AS course_count,
+            (SELECT COUNT(DISTINCT cs.student_id) FROM course c
+             INNER JOIN course_student cs ON cs.course_id = c.id WHERE c.teacher_id = t.id) AS total_students,
+            (SELECT COUNT(*) FROM assignment a INNER JOIN course c ON a.course_id = c.id
+             WHERE c.teacher_id = t.id) AS assignment_count,
+            (SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id) AS total_submissions,
+            (SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id AND sub.is_late = 1) AS total_late_submissions,
+            ROUND((SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id AND sub.is_late = 1) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id), 0), 1) AS late_rate,
+            (SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id) AS graded_count,
+            (SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id)
+            - (SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+               INNER JOIN assignment a ON sub.assignment_id = a.id
+               INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id) AS pending_grading_count,
+            ROUND((SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id), 0), 1) AS grading_progress,
+            ROUND((SELECT AVG(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id), 1) AS average_score_given
+        FROM user t WHERE t.role = 'TEACHER' AND t.status = 1
+        ORDER BY course_count DESC
+    </select>
+
+    <select id="getSingleTeacherWorkload" resultMap="TeacherWorkloadMap">
+        SELECT t.id AS teacher_id, t.real_name AS teacher_name, t.teacher_no,
+            (SELECT COUNT(*) FROM course c WHERE c.teacher_id = t.id) AS course_count,
+            (SELECT COUNT(DISTINCT cs.student_id) FROM course c
+             INNER JOIN course_student cs ON cs.course_id = c.id WHERE c.teacher_id = t.id) AS total_students,
+            (SELECT COUNT(*) FROM assignment a INNER JOIN course c ON a.course_id = c.id
+             WHERE c.teacher_id = t.id) AS assignment_count,
+            (SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id) AS total_submissions,
+            (SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id AND sub.is_late = 1) AS total_late_submissions,
+            ROUND((SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id AND sub.is_late = 1) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id), 0), 1) AS late_rate,
+            (SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id) AS graded_count,
+            (SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id)
+            - (SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+               INNER JOIN assignment a ON sub.assignment_id = a.id
+               INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id) AS pending_grading_count,
+            ROUND((SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id), 0), 1) AS grading_progress,
+            ROUND((SELECT AVG(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = t.id), 1) AS average_score_given
+        FROM user t WHERE t.id = #{teacherId}
+    </select>
+
+    <!-- ====================================================================
+         7. 系统总览统计（管理员仪表盘）
+         ==================================================================== -->
+    <select id="getSystemOverviewStats" resultType="java.util.HashMap">
+        SELECT
+            (SELECT COUNT(*) FROM user) AS total_users,
+            (SELECT COUNT(*) FROM user WHERE role = 'STUDENT') AS student_count,
+            (SELECT COUNT(*) FROM user WHERE role = 'TEACHER') AS teacher_count,
+            (SELECT COUNT(*) FROM course) AS course_count,
+            (SELECT COUNT(*) FROM assignment) AS assignment_count,
+            (SELECT COUNT(*) FROM submission) AS submission_count,
+            (SELECT COUNT(*) FROM grade) AS graded_count,
+            ROUND((SELECT COUNT(*) FROM submission) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM course_student) * (SELECT COUNT(*) FROM assignment), 0), 1) AS submission_rate,
+            ROUND((SELECT COUNT(*) FROM grade g WHERE g.score >= 60) * 100.0
+             / NULLIF((SELECT COUNT(*) FROM grade), 0), 1) AS pass_rate
+        FROM DUAL
+    </select>
+
+    <!-- ====================================================================
+         8. 学生仪表盘统计
+         ==================================================================== -->
+    <select id="getStudentDashboardStats" resultType="java.util.HashMap">
+        SELECT
+            (SELECT COUNT(*) FROM course_student WHERE student_id = #{studentId}) AS course_count,
+            (SELECT COUNT(*) FROM assignment a WHERE a.course_id IN
+                (SELECT course_id FROM course_student WHERE student_id = #{studentId})) AS total_assignments,
+            (SELECT COUNT(*) FROM submission WHERE student_id = #{studentId}) AS submitted_count,
+            (SELECT COUNT(DISTINCT sub.id) FROM submission sub
+             INNER JOIN grade g ON g.submission_id = sub.id WHERE sub.student_id = #{studentId}) AS graded_count,
+            ROUND((SELECT AVG(g.score) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+             WHERE sub.student_id = #{studentId}), 1) AS average_score
+        FROM DUAL
+    </select>
+
+    <!-- ====================================================================
+         9. 教师仪表盘统计
+         ==================================================================== -->
+    <select id="getTeacherDashboardStats" resultType="java.util.HashMap">
+        SELECT
+            (SELECT COUNT(*) FROM course WHERE teacher_id = #{teacherId}) AS course_count,
+            (SELECT COUNT(*) FROM assignment a INNER JOIN course c ON a.course_id = c.id
+             WHERE c.teacher_id = #{teacherId}) AS assignment_count,
+            (SELECT COUNT(*) FROM submission sub INNER JOIN assignment a ON sub.assignment_id = a.id
+             INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = #{teacherId})
+            - (SELECT COUNT(*) FROM grade g INNER JOIN submission sub ON g.submission_id = sub.id
+               INNER JOIN assignment a ON sub.assignment_id = a.id
+               INNER JOIN course c ON a.course_id = c.id WHERE c.teacher_id = #{teacherId}) AS pending_count,
+            (SELECT COUNT(DISTINCT cs.student_id) FROM course c
+             INNER JOIN course_student cs ON cs.course_id = c.id WHERE c.teacher_id = #{teacherId}) AS student_count
+        FROM DUAL
+    </select>
+
+</mapper>

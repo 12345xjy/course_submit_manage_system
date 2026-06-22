@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.courseassignment.mapper.CourseStudentMapper">
+
+    <resultMap id="CourseStudentMap" type="com.courseassignment.entity.CourseStudent">
+        <id property="id" column="id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="studentId" column="student_id"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <!-- 2表联查：course_student + user -->
+    <select id="findByCourseId" resultMap="CourseStudentMap">
+        SELECT cs.* FROM course_student cs WHERE cs.course_id = #{courseId} ORDER BY cs.created_at DESC
+    </select>
+
+    <select id="findByStudentId" resultMap="CourseStudentMap">
+        SELECT cs.* FROM course_student cs WHERE cs.student_id = #{studentId} ORDER BY cs.created_at DESC
+    </select>
+
+    <select id="findByCourseAndStudent" resultMap="CourseStudentMap">
+        SELECT cs.* FROM course_student cs WHERE cs.course_id = #{courseId} AND cs.student_id = #{studentId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO course_student (course_id, student_id) VALUES (#{courseId}, #{studentId})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM course_student WHERE course_id = #{courseId} AND student_id = #{studentId}
+    </delete>
+
+    <!-- 多表联查：user INNER JOIN course_student -->
+    <select id="findStudentsByCourseId" resultType="com.courseassignment.entity.User">
+        SELECT u.* FROM user u INNER JOIN course_student cs ON u.id = cs.student_id WHERE cs.course_id = #{courseId}
+    </select>
+
+    <select id="countByCourseId" resultType="long">
+        SELECT COUNT(*) FROM course_student WHERE course_id = #{courseId}
+    </select>
+
+</mapper>

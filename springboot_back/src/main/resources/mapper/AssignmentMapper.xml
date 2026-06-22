@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.courseassignment.mapper.AssignmentMapper">
+
+    <resultMap id="AssignmentMap" type="com.courseassignment.entity.Assignment">
+        <id property="id" column="id"/>
+        <result property="courseId" column="course_id"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="deadline" column="deadline"/>
+        <result property="maxScore" column="max_score"/>
+        <result property="fileTypes" column="file_types"/>
+        <result property="maxSize" column="max_size"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="courseName" column="course_name"/>
+        <result property="submissionCount" column="submission_count"/>
+        <result property="gradedCount" column="graded_count"/>
+    </resultMap>
+
+    <!-- 多表联查：assignment + course + submission + grade -->
+    <select id="findById" resultMap="AssignmentMap">
+        SELECT a.*, c.name AS course_name,
+            (SELECT COUNT(*) FROM submission s WHERE s.assignment_id = a.id) AS submission_count,
+            (SELECT COUNT(*) FROM submission s INNER JOIN grade g ON s.id = g.submission_id WHERE s.assignment_id = a.id) AS graded_count
+        FROM assignment a LEFT JOIN course c ON a.course_id = c.id WHERE a.id = #{id}
+    </select>
+
+    <select id="findByIdWithStudent" resultMap="AssignmentMap">
+        SELECT a.*, c.name AS course_name,
+            (SELECT COUNT(*) FROM submission s WHERE s.assignment_id = a.id AND s.student_id = #{studentId}) AS submission_count,
+            (SELECT COUNT(*) FROM submission s INNER JOIN grade g ON s.id = g.submission_id WHERE s.assignment_id = a.id AND s.student_id = #{studentId}) AS graded_count
+        FROM assignment a LEFT JOIN course c ON a.course_id = c.id WHERE a.id = #{id}
+    </select>
+
+    <select id="findAll" resultMap="AssignmentMap">
+        SELECT a.*, c.name AS course_name,
+            (SELECT COUNT(*) FROM submission s WHERE s.assignment_id = a.id) AS submission_count,
+            (SELECT COUNT(*) FROM submission s INNER JOIN grade g ON s.id = g.submission_id WHERE s.assignment_id = a.id) AS graded_count
+        FROM assignment a LEFT JOIN course c ON a.course_id = c.id WHERE 1=1
+        <if test="courseId != null"> AND a.course_id = #{courseId} </if>
+        <if test="teacherId != null"> AND c.teacher_id = #{teacherId} </if>
+        <if test="status != null"> AND a.status = #{status} </if>
+        ORDER BY a.created_at DESC
+    </select>
+
+    <select id="findByStudentId" resultMap="AssignmentMap">
+        SELECT a.*, c.name AS course_name,
+            (SELECT COUNT(*) FROM submission s WHERE s.assignment_id = a.id AND s.student_id = #{studentId}) AS submission_count,
+            (SELECT COUNT(*) FROM submission s INNER JOIN grade g ON s.id = g.submission_id WHERE s.assignment_id = a.id AND s.student_id = #{studentId}) AS graded_count
+        FROM assignment a LEFT JOIN course c ON a.course_id = c.id
+        WHERE a.course_id IN (SELECT course_id FROM course_student WHERE student_id = #{studentId})
+        ORDER BY a.created_at DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO assignment (course_id, title, description, deadline, max_score, file_types, max_size)
+        VALUES (#{courseId}, #{title}, #{description}, #{deadline}, #{maxScore}, #{fileTypes}, #{maxSize})
+    </insert>
+
+    <update id="update">
+        UPDATE assignment SET
+        <if test="title != null"> title = #{title}, </if>
+        <if test="description != null"> description = #{description}, </if>
+        <if test="deadline != null"> deadline = #{deadline}, </if>
+        <if test="maxScore != null"> max_score = #{maxScore}, </if>
+        <if test="fileTypes != null"> file_types = #{fileTypes}, </if>
+        <if test="maxSize != null"> max_size = #{maxSize}, </if>
+        <if test="status != null"> status = #{status}, </if>
+        updated_at = NOW() WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM assignment WHERE id = #{id}
+    </delete>
+
+    <select id="countByCourseId" resultType="long">
+        SELECT COUNT(*) FROM assignment WHERE course_id = #{courseId}
+    </select>
+
+</mapper>
