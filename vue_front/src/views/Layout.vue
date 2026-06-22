@@ -101,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { notificationApi } from '@/api/notification'
@@ -123,9 +123,15 @@ function toggleCollapse() { isCollapse.value = !isCollapse.value }
 
 function handleLogout() { userStore.logout(); router.push('/login') }
 
+let pollTimer = null
+
 onMounted(() => {
   fetchUnreadCount()
-  setInterval(fetchUnreadCount, 30000)
+  pollTimer = setInterval(fetchUnreadCount, 30000)
+})
+
+onUnmounted(() => {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
 })
 
 async function fetchUnreadCount() {
